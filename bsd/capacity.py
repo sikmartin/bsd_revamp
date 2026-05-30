@@ -1,5 +1,16 @@
+# LEGACY: superseded by bsd.obligations (Branch 1) and bsd.target (Branch 2).
+# This module implements the original flat "gap × 30 days" model from
+# analysis.ipynb.  It is retained for historical reference and because
+# tests/test_capacity.py covers it.  Do not use in new work.
 """
 capacity.py — Reliable import capacity percentiles and storage gap scenarios.
+
+.. deprecated::
+    Superseded by :mod:`bsd.obligations` (Branch 1 monthly obligations) and
+    :mod:`bsd.target` (Branch 2 season-long fill target).  This module uses
+    the original flat "gap × 30 days" model from ``analysis.ipynb`` and does
+    not account for the withdrawal-rate constraint or month-specific import
+    percentiles.
 
 The central question this module answers is:
 
