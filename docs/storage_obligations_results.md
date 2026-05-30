@@ -27,7 +27,8 @@ starting at fill level F:
 2. **Import level** — month-specific percentile of post-2022 daily Physical Flow imports.
 3. **Withdrawal-rate constraint** — at each day, `wc(fill_t)` must meet the daily gap.
    Default curve: 50/50 blend of empirical P95 and ENTSOG engineering curve (10% haircut).
-   Controlled by `WC_ASSUMPTION` in the notebook.
+   Controlled by the `eng_weight` argument to `bsd.fit_withdrawal_curves().blend(eng_weight)`;
+   Branch 1 default is `eng_weight=0.50`.
 4. **Volume constraint** — fill must remain non-negative.
 5. **Minimum obligation** — bisection finds the lowest F at which the simulation is feasible.
 
@@ -175,16 +176,17 @@ buffering, so results are conservative upper-bounds at each scenario.
 **3. Withdrawal curve assumption.**  Two boundary curves bracket physical deliverability:
 the empirical P95 (conservative floor — deflated by commercial suppression on cold days)
 and the ENTSOG engineering curve (physical ceiling — declared technical capacity).  The
-default blend (50/50, 10% haircut on engineering) sits between them.  `WC_ASSUMPTION` in
-the notebook controls the active curve; the sensitivity table above shows the full range.
+default blend (50/50, 10% haircut on engineering) sits between them.
+Pass `eng_weight` to `bsd.fit_withdrawal_curves().blend(eng_weight)` to switch curves;
+the sensitivity table above shows the full range.
 
 **4. Import assumption — conditional vs unconditional P99.**  Post-2022 data shows a strong
 negative correlation between Czech storage withdrawal and imports (Spearman ρ = −0.52 to
 −0.76 in winter months).  The unconditional P99 overstates import availability during a
 genuine cold emergency — it is driven by mild days with high commercial flow.  The cold-day
 P99 is the appropriate ceiling: it conditions on days when the interconnectors were actually
-being tested under demand stress.  `IMPORT_ASSUMPTION` in the notebook controls which
-benchmark is shown in the ceiling table.  The residual risk of a pan-European physical
+being tested under demand stress.  Choose which benchmark to display by passing either
+`p99_cold` or `p99_uncond` from `bsd.compute_p99_imports()` as the import Series.  The residual risk of a pan-European physical
 capacity constraint (German pipe saturated) is captured by S1.
 
 **5. End-of-season operational floor.**  No endpoint constraint is embedded in the March

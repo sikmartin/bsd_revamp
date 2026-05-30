@@ -26,7 +26,8 @@ At each day:
    both month-specific.
 2. The **maximum deliverable withdrawal** is read from the fill-dependent
    withdrawal-capacity curve.  Default: 50/50 blend of empirical P95 and ENTSOG
-   engineering curve (10% haircut).  Controlled by `WC_ASSUMPTION` in the notebook.
+   engineering curve (10% haircut).  Controlled by the `eng_weight` argument to
+   `bsd.fit_withdrawal_curves().blend(eng_weight)`; Branch 2 default is `eng_weight=0.75`.
 3. If withdrawal capacity falls below the daily gap, the system is
    **infeasible** (withdrawal-rate binding).
 4. Fill level is decremented by the daily gap; if it goes negative the
@@ -193,9 +194,9 @@ levels (<20%) where the empirical curve is poorly identified.
 | 50% | ~346 | ~642 | ~568 |
 | 70% | ~346 | ~647 | ~572 |
 
-`WC_ASSUMPTION` in the notebook controls the active curve.  The empirical curve
-is the conservative floor (deflated by commercial suppression); the engineering
-curve is the physical ceiling (declared technical capacity).
+Pass `eng_weight` to `bsd.fit_withdrawal_curves().blend(eng_weight)` to switch curves.
+The empirical curve is the conservative floor (deflated by commercial suppression);
+the engineering curve is the physical ceiling (declared technical capacity).
 
 ---
 
@@ -215,7 +216,8 @@ Month-specific import percentiles used per scenario (GWh/d), plus P99 benchmarks
 The cold-day P99 is the relevant import ceiling for a stress event — it conditions on days
 when the interconnectors were tested under peak demand.  The unconditional P99 is inflated
 by mild-weather high-import days and overstates capacity availability during a cold emergency.
-`IMPORT_ASSUMPTION` in the notebook controls which benchmark is used in the ceiling table.
+Choose which benchmark to use by passing `p99_cold` or `p99_uncond` from
+`bsd.compute_p99_imports()` as the import Series in the ceiling scenario.
 
 Historical context — post-2022 winter imports by season:
 
@@ -258,8 +260,8 @@ lower.  Results are therefore best read as an upper-bound at each scenario.
 empirical P95 (floor) and ENTSOG engineering curve (ceiling).  The default 75/25 blend
 is motivated by the season-long simulation regularly reaching low fill levels where
 empirical data are sparse; the engineering curve is better-identified there.  The
-assumption sensitivity table quantifies the impact.  `WC_ASSUMPTION` controls the
-active curve.
+assumption sensitivity table quantifies the impact.  Pass `eng_weight` to
+`bsd.fit_withdrawal_curves().blend(eng_weight)` to switch curves.
 
 **3. Injection feasibility not checked.** The model assumes any 1-October
 target is achievable via summer injection.  At 32 TWh (S2) this is plausible
