@@ -310,31 +310,32 @@ results, sensitivity tables and charts are documented in
 
 ### Headline storage targets (minimum 1-October fill)
 
-> **Numbers updated 2026-05-30:** figures below supersede those recorded here before
-> Phase 1 reconciliation.  The earlier figures (S2 = 31.8 TWh, S1 = 34.4 TWh) used
-> the purely empirical P95 withdrawal curve.  Current figures use the blended WC curve
-> (75% engineering / 25% empirical, 10% haircut on engineering) — see
-> [`docs/wc_blend_decision.md`](wc_blend_decision.md) and
+> **Numbers updated 2026-05-30 (Phase 1)** and **revised 2026-05-30 (T1/T4 fixes):**
+> (1) Capacity updated from 45.3 TWh to 40.8 TWh (pre-inverse-storage AGSI+ figure).
+> (2) End-of-season floor of 0.5 TWh at Mar 31 embedded as a hard simulation constraint.
+> See [`docs/consulting_review.md`](consulting_review.md) T1/T4 responses,
+> [`docs/wc_blend_decision.md`](wc_blend_decision.md), and
 > [`docs/storage_target_results.md`](storage_target_results.md) for full detail.
 
 | Scenario | Start fill (%) | Start fill (TWh) | Binding constraint |
 |---|---|---|---|
-| S1 — High stress    | 55.7 | **25.2** | Withdrawal rate |
-| S2 — Stressed       | 48.4 | **21.9** | Volume |
-| S3 — Base stressed  | 37.6 | **17.0** | Volume |
-| S4 — Median         | 21.9 |  **9.9** | Volume |
-| S5 — Favourable     | 11.7 |  **5.3** | Volume |
+| S1 — High stress    | 63.1 | **25.7** | End-of-season floor |
+| S2 — Stressed       | 55.1 | **22.5** | End-of-season floor |
+| S3 — Base stressed  | 43.0 | **17.5** | End-of-season floor |
+| S4 — Median         | 25.6 | **10.4** | End-of-season floor |
+| S5 — Favourable     | 14.2 |  **5.8** | End-of-season floor |
 
-Czech UGS working-gas capacity: **45.3 TWh**.  All targets are within
-installed capacity.
+Czech UGS working-gas capacity: **40.8 TWh** (pre-inverse-storage AGSI+ figure).
+All targets are within installed capacity.
 
 ### Key finding on binding constraint
 
-Under the 75/25 blended WC curve, only **S1** is withdrawal-rate constrained.
-For S2–S4, the engineering-weighted curve keeps deliverability above the daily
-gap throughout the simulation; what limits the target is running out of gas
-volume.  Under the purely empirical P95 curve (pre-blend), S2–S4 were also
-withdrawal-rate limited, producing the higher pre-blend targets (31.8 TWh for S2).
+With the 0.5 TWh end-of-season floor embedded and the 75/25 blended WC curve,
+the binding constraint for **all scenarios** is the end-of-March operational floor.
+The engineering-weighted curve keeps withdrawal rate adequate throughout; volume
+does not run out before March 31.  Under the purely empirical curve (pre-blend)
+S2–S4 were withdrawal-rate limited at ~127 GWh/d below 20% fill, producing the
+higher pre-blend targets (~31.8 TWh for S2).
 
 The blend weight is therefore the dominant modelling choice — see
 `docs/wc_blend_decision.md`.  Regardless of which constraint binds, the policy
@@ -370,21 +371,21 @@ The season-long simulation (Branch 2, Section 8) answers the question of how muc
 
 ### Headline monthly obligations (minimum fill at month start, TWh)
 
-> **Numbers updated 2026-05-30:** figures below supersede those recorded here before
-> Phase 1 reconciliation.  The earlier figures (e.g. S2 Jan = 14.88 TWh) used the
-> purely empirical P95 withdrawal curve.  Current figures use the blended WC curve
-> (50% engineering / 50% empirical, 10% haircut) — see
+> **Numbers updated 2026-05-30 (Phase 1)** and **revised 2026-05-30 (T4 fix):**
+> capacity updated from 45.3 TWh to 40.8 TWh (pre-inverse-storage AGSI+ figure).
+> Earlier figures (e.g. S2 Jan = 14.88 TWh) used the purely empirical P95 withdrawal
+> curve; current figures use the 50/50 blend — see
 > [`docs/wc_blend_decision.md`](wc_blend_decision.md) and
-> [`docs/storage_obligations_results.md`](storage_obligations_results.md) for full detail.
+> [`docs/storage_obligations_results.md`](storage_obligations_results.md).
 
 | Month | S1 — High stress | **S2 — Stressed** | S3 — Base | S4 — Median | S5 — Favourable |
 |---|---|---|---|---|---|
 | Oct | 0.00 | **0.00** | 0.00 | 0.00 | 0.00 |
-| Nov | 1.36 | **1.00** | 0.10 | 0.00 | 0.00 |
-| Dec | 4.88 | **4.46** | 3.67 | 0.46 | 0.00 |
-| Jan | 11.57 | **9.33** | 6.36 | 2.31 | 0.67 |
-| Feb | 6.66 | **3.90** | 2.19 | 1.30 | 0.58 |
-| Mar | 1.19 | **0.34** | 0.20 | 0.00 | 0.00 |
+| Nov | 1.36 | **1.01** | 0.10 | 0.00 | 0.00 |
+| Dec | 4.50 | **4.12** | 3.41 | 0.46 | 0.00 |
+| Jan | 10.56 | **8.54** | 5.85 | 2.31 | 0.67 |
+| Feb | 6.12 | **3.62** | 2.19 | 1.30 | 0.58 |
+| Mar | 1.19 | **0.34** | 0.21 | 0.00 | 0.00 |
 | + Mar 31 floor | — | **~0.50** | ~0.50 | ~0.50 | ~0.50 |
 
 ★ Withdrawal-rate binding in Dec–Jan for S1–S2 (see `storage_obligations_results.md`).
@@ -416,4 +417,74 @@ Post-2022 Physical Flow data (272 overlapping winter days, Jan 2025–Mar 2026) 
 The following items were scoped but not implemented and remain as the next phase of work on Branch 2 (`storage_target.ipynb`):
 
 1. **Stochastic import draws** — replace fixed monthly percentiles with sampled draws from the empirical import distribution to produce a distribution of required starting fills rather than five point estimates.
-2. **Summer injection feasibility** — verify that the Branch 2 starting-fill targets (up to 25.2 TWh for S1) are achievable given realistic Apr–Sep injection rates and EU filling-obligation constraints.
+2. **Summer injection feasibility** — verify that the Branch 2 starting-fill targets (up to 25.7 TWh for S1) are achievable given realistic Apr–Sep injection rates and EU filling-obligation constraints.
+
+---
+
+### 9.3  Cross-branch coherence at 1 January (Me2)
+
+Branch 1 and Branch 2 produce different numbers for the same date (1 January) because
+they answer different questions.  This table shows the B2 trajectory fill at 1 January
+alongside the B1 standalone obligation, at S2 (planning anchor):
+
+| Quantity | S1 | **S2** | S3 | S4 | S5 |
+|---|---|---|---|---|---|
+| B2 fill at 1 Jan (TWh) | 17.0 | **14.2** | 11.7 | 8.4 | 5.8 |
+| B1 Jan obligation (TWh) | 10.6 | **8.5** | 5.9 | 2.3 | 0.7 |
+| Difference (buffer) | **6.4** | **5.7** | **5.8** | **6.1** | **5.1** |
+
+**Why the difference exists** — and why it should.  The B1 obligation (8.5 TWh at S2)
+answers "what is the *minimum* fill on 1 Jan to survive a further 30-day stress event
+*starting on that date*?"  The B2 trajectory (14.2 TWh) answers "what fill does the
+season-long simulation reach at 1 Jan, given it started at the minimum feasible 1-Oct
+level?"  The 5.7 TWh gap is the *buffer* implied by the season-long framing: because
+the simulation aims for 0.5 TWh on 31 March (not 0 TWh), and imports provide partial
+cover every day from October through December, storage has already been drawn down but
+not as aggressively as if January were a standalone fresh-start event.
+
+**Policy implication.**  A regulator using B2 to set the October target and B1 to set
+monthly checkpoints should verify that the B2 trajectory at each month-start *exceeds*
+the corresponding B1 obligation.  The table above shows it does for all scenarios —
+there is no internal inconsistency between the two branches when read correctly.
+
+---
+
+## 10. Regulatory context — EU Reg 2025/1733 and Czech monthly framing (M3)
+
+**EU Regulation 2025/1733** (in force 10 September 2025) extended the 90% UGS
+filling obligation through end-2027 but made two material changes to the original
+Reg 2017/1938 framework:
+
+1. **Intermediate monthly milestones removed.** The original regulation included
+   calendar-month filling targets (Feb 45%, May 55%, etc.).  Reg 2025/1733 replaced
+   these with a single 1 November target and a ±10 percentage-point tolerance band.
+2. **Flexibility band added.** Member States may undershoot the headline target by
+   up to 10 pp provided they compensate in the following months.
+
+**Implication for this analysis.** The Czech monthly obligation framing (Branch 1,
+§9) is **materially stricter than the EU floor** in two ways:
+- It sets obligations at *each of six* month-starts (Oct–Mar) rather than a single
+  November checkpoint.
+- It uses a once-per-season 1-in-20 stress test, not the EU's rolling 7/30-day
+  standard applied at a fixed calendar date.
+
+This stricter posture is a defensible policy choice — monthly checkpoints provide
+more granular market signals and align with the Czech regulatory calendar (ERÚ
+Decree 349/2012).  However, it must be **explicitly argued** in any submission to
+ERÚ or MPO, not assumed.  Specifically:
+
+| Dimension | EU Reg 2025/1733 | Czech Branch 1 | Implication |
+|---|---|---|---|
+| Checkpoint frequency | 1 November + tolerance | 6 month-starts | Czech is stricter |
+| Stress standard | 1-in-20 peak day/30d | 1-in-20, two-tier profile | Equivalent |
+| Tolerance | ±10 pp | None embedded | Czech is stricter |
+| Verification | National regulator | ERÚ | Compatible |
+
+**Recommended action.** Before submitting any number from this analysis as a binding
+regulatory anchor, add a section to the ERÚ submission comparing the Czech monthly
+schedule to EU 2025/1733 and quantifying the cost of incremental stringency (option
+value of delayed refilling, summer-price exposure, alignment with EU tolerance band).
+
+**References.**
+- Council of the EU, [Gas storage: 2-year extension of refill rules](https://www.consilium.europa.eu/en/press/press-releases/2025/07/18/gas-storage-council-greenlights-2-year-extension-of-reserves-filling-rules-to-safeguard-winter-supply/), 18 Jul 2025
+- OIES, [Insight 174: EU Gas Storage Regulation](https://www.oxfordenergy.org/wpcms/wp-content/uploads/2025/11/Insight-174-EU-Gas-Storage-Regulation.pdf), Nov 2025

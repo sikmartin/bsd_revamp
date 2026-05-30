@@ -2,7 +2,12 @@
 
 from .data import WINTER_MONTHS  # re-export; defined once in data.py
 
-CAPACITY_TWH: float = 45.3034
+# Working-gas capacity: GIE AGSI+ aggregate for Czech UGS, pre-inverse-storage era.
+# Source: AGSI+ snapshot from before inverse storage was permitted (~2021/22 data).
+# UPDATE: re-verify against current GIE AGSI+ "max gas in storage" CZ aggregate
+# after confirming whether any currently active inverse-storage contracts inflate
+# the reported total.  Replace this value and re-run notebooks / tests.
+CAPACITY_TWH: float = 40.7739
 CAPACITY_GWH: float = CAPACITY_TWH * 1000
 
 MONTH_ORDER: list[int] = [10, 11, 12, 1, 2, 3]
@@ -27,3 +32,12 @@ WC_DEFAULT_HAIRCUT: float = 0.10
 
 # Cold-day import conditioning
 COLD_DAY_QUANTILE: float = 0.80
+
+# German gas storage levy (Gasspeicherumlage) — raised Czech import costs ~€2.5/MWh
+# while in force, suppressing observed import utilisation.  Import percentiles computed
+# from data spanning this period are conservative (understated capacity).
+# Start: 2022-10-01 (EnSiG first application, gas year 2022/23)
+# End:   2024-12-31 (abolished from 2025-01-01 per BNetzA announcement Nov 2024)
+# Reference: Argus Media, "Germany to stop gas storage levy on transit from 2025"
+GAS_STORAGE_LEVY_START: str = "2022-10-01"
+GAS_STORAGE_LEVY_END: str   = "2024-12-31"

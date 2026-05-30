@@ -5,6 +5,14 @@
 **Notebooks re-executed via:** `uv run jupyter nbconvert --to notebook --execute`  
 **Data vintage:** ENTSOG Physical Flows through 2026-05-28; GIE storage data through 2026-05-28
 
+> ⚠️ **Superseded for absolute TWh values.** This cross-check was produced using
+> `CAPACITY_TWH = 45.3034 TWh` and without the end-of-March operational floor.
+> Following consulting review (T1 + T4 fixes, 2026-05-30), capacity was updated to
+> `40.7739 TWh` and a 0.5 TWh end-of-March floor was embedded.  All TWh figures in
+> `storage_obligations_results.md` and `storage_target_results.md` were updated
+> accordingly.  The structural ✅/❌ findings (Residual 23d column error, binding
+> constraint for S2–S4) remain valid and were corrected as noted.
+
 > **Gate purpose:** Confirm that `docs/storage_obligations_results.md` and
 > `docs/storage_target_results.md` accurately reflect current notebook output before
 > the deck (Phase 6) uses them as the sole source of truth.

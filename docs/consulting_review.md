@@ -3,7 +3,31 @@
 **Reviewers:** Senior gas-market analyst & senior gas-systems infrastructure analyst (consulting team)
 **Scope:** Documents reviewed — `analysis_synthesis_brief.md`, `storage_obligations_results.md`, `storage_target_results.md`, `wc_blend_decision.md`, and figures under `figs/`. Code intentionally not inspected.
 **Date:** 2026-05-30
+**Response date:** 2026-05-30
 **Verdict:** *Analytically credible scaffold, but several first-order assumptions need rework before any number is offered as a binding regulatory anchor.*
+
+---
+
+## Team response summary (2026-05-30)
+
+| Issue | Action taken |
+|---|---|
+| **T1** Fill trajectories reach 0% | **Fixed.** 0.5 TWh end-of-March floor embedded as a hard constraint in `bsd.target.simulate`. B2 S2 target: 21.9 → 22.5 TWh. Binding constraint for all scenarios: end-of-season floor. |
+| **T2** WC curve biased / non-monotone | **Noted — not executed.** Cold-day conditioned upper-envelope approach is the right direction; deferred to next modelling phase as it requires re-specification of the empirical curve fitting. |
+| **T3** Declared WC 734 GWh/d above firm capacity | **Addressed by haircut.** The 10% engineering-curve haircut and 50/50 blend already bridge the declared-vs-firm gap. The 10% haircut reduces the engineering ceiling from 734 to ~660 GWh/d, within the firm range cited by the review. No further code change. |
+| **T4** Capacity 45.3 TWh above public sources | **Fixed.** Updated to 40.7739 TWh (pre-inverse-storage AGSI+ figure). Update point flagged in `bsd/constants.py`. All obligation and target numbers updated accordingly. |
+| **T5** Blend weights diverge across branches | **Noted — not executed.** Same as T2. Deferred. See also `docs/wc_blend_decision.md`. |
+| **M1** Imports treated as fixed percentile | **Noted.** This is not an econometric analysis. Import price-elasticity is out of scope for this regulatory framing exercise. |
+| **M2** No injection feasibility check | **Noted.** Deferred per §9.2 of the brief. Out of scope for this phase. |
+| **M3** EU Reg 2025/1733 not mentioned | **Fixed.** §10 added to `analysis_synthesis_brief.md` comparing Czech monthly schedule to EU 2025/1733 and flagging where Czech framing is stricter. |
+| **M4** German levy structural break | **Flagged.** `levy_in_force` column added to `bsd.data.load_daily_imports()` output. Levy period 2022-10-01 – 2024-12-31 documented in `bsd/constants.py`. Percentile pooling note added to data docstring. |
+| **M5** No N-1 corridor scenario | **Noted.** N-1 is addressed in a separate regulatory instrument (EU Reg 2017/1938 Art. 5 N-1 infrastructure standard). Out of scope here. |
+| **M6** Market impact not assessed | **Noted.** Out of scope for this regulatory framing exercise. |
+| **Me1** No ERÚ Decree 349/2012 citation | **Acknowledged.** The 7/23-day demand profile is an analytical convention consistent with the regulation; full ERÚ citation mapping is reserved for the formal regulatory submission text. |
+| **Me2** Inter-branch coherence at 1 Jan | **Fixed.** §9.3 added to `analysis_synthesis_brief.md` with a cross-branch table at 1 January and explanation of the 5–6 TWh buffer. |
+| **Me3** Spearman ρ on 272-day sample | **Noted.** Added to future-work list (§9.2). Re-running on the full 760-day winter sample is straightforward and recommended before external submission. |
+| **Me4** Sensitivity table S4/S5 swapped | **Fixed** (committed earlier). |
+| **Me5** Sign-off typo / no date | **Fixed** (committed earlier). |
 
 ---
 

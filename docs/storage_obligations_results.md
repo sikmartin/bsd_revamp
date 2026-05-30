@@ -46,13 +46,14 @@ Intra-month draw-down paths are unconstrained, preserving market flexibility.
 | Month | S1 — High stress | **S2 — Stressed** | S3 — Base stressed | S4 — Median | S5 — Favourable |
 |---|---|---|---|---|---|
 | Oct | 0.00 | **0.00** | 0.00 | 0.00 | 0.00 |
-| Nov | 1.36 | **1.00** | 0.10 | 0.00 | 0.00 |
-| Dec | 4.88 | **4.46** | 3.67 | 0.46 | 0.00 |
-| Jan | 11.57 | **9.33** | 6.36 | 2.31 | 0.67 |
-| Feb | 6.66 | **3.90** | 2.19 | 1.30 | 0.58 |
-| Mar | 1.19 | **0.34** | 0.20 | 0.00 | 0.00 |
+| Nov | 1.36 | **1.01** | 0.10 | 0.00 | 0.00 |
+| Dec | 4.50 | **4.12** | 3.41 | 0.46 | 0.00 |
+| Jan | 10.56 | **8.54** | 5.85 | 2.31 | 0.67 |
+| Feb | 6.12 | **3.62** | 2.19 | 1.30 | 0.58 |
+| Mar | 1.19 | **0.34** | 0.21 | 0.00 | 0.00 |
 
-Czech UGS working-gas capacity: **45.3 TWh**.  All obligations fit within installed capacity.
+Czech UGS working-gas capacity: **40.8 TWh** (pre-inverse-storage AGSI+ figure; see T4 note).
+All obligations fit within installed capacity.
 
 **Recommended end-of-season operational floor (separate instrument): ~0.5 TWh at Mar 31.**
 See Caveats §5.
@@ -69,11 +70,11 @@ it answers "what if the interconnectors deliver near-maximum during the stress p
 | Oct | 360.9 | 0.00 |
 | Nov | 351.6 | 0.00 |
 | Dec | 387.5 | 0.00 |
-| Jan | 217.3 | **2.21** |
+| Jan | 217.3 | **2.20** |
 | Feb | 258.3 | 0.48 |
 | Mar | 742.7 | 0.00 |
 
-Under this ceiling assumption only January retains a material obligation (2.21 TWh),
+Under this ceiling assumption only January retains a material obligation (2.20 TWh),
 driven purely by the withdrawal-rate constraint — storage cannot deliver the peak-day
 gap fast enough even with generous imports.
 
@@ -81,14 +82,13 @@ gap fast enough even with generous imports.
 
 | WC assumption | Import assumption | Jan obligation |
 |---|---|---|
-| Empirical P95 | S2 scenarios | 14.88 TWh |
-| **Blend 50/50** | **S2 scenarios** | **9.33 TWh (default)** |
+| Empirical P95 | S2 scenarios | 13.85 TWh |
+| **Blend 50/50** | **S2 scenarios** | **8.54 TWh (default)** |
 | ENTSOG engineering | S2 scenarios | 4.68 TWh |
-| Blend 50/50 | P99 cold days | 2.21 TWh |
-| ENTSOG engineering | P99 cold days | 1.09 TWh |
+| Blend 50/50 | P99 cold days | 2.20 TWh |
 
-The range 2–15 TWh represents the full span of defensible regulatory choices.
-**S2 / blend (9.33 TWh) is the recommended anchor**: it pairs a conservative but
+The range 2–14 TWh represents the full span of defensible regulatory choices.
+**S2 / blend (8.54 TWh) is the recommended anchor**: it pairs a conservative but
 not extreme import assumption with a withdrawal curve that acknowledges both physical
 capacity and observed commercial behaviour.
 

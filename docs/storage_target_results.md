@@ -55,56 +55,58 @@ a conservative upper-bound framing (see Caveats).
 
 | Scenario | Import basis | Start fill (%) | Start fill (TWh) | Binding constraint |
 |---|---|---|---|---|
-| S1 — High stress    | P10 imports | **55.7** | **25.2** | Withdrawal rate |
-| S2 — Stressed       | P20 imports | **48.4** | **21.9** | Volume |
-| S3 — Base stressed  | P30 imports | **37.6** | **17.0** | Volume |
-| S4 — Median         | P50 imports | **21.9** |  **9.9** | Volume |
-| S5 — Favourable     | P70 imports | **11.7** |  **5.3** | Volume |
+| S1 — High stress    | P10 imports | **63.1** | **25.7** | End-of-season floor |
+| S2 — Stressed       | P20 imports | **55.1** | **22.5** | End-of-season floor |
+| S3 — Base stressed  | P30 imports | **43.0** | **17.5** | End-of-season floor |
+| S4 — Median         | P50 imports | **25.6** | **10.4** | End-of-season floor |
+| S5 — Favourable     | P70 imports | **14.2** |  **5.8** | End-of-season floor |
 
-Czech UGS total working-gas capacity: **45.3 TWh**.  All targets fit within
-installed capacity.
+Czech UGS total working-gas capacity: **40.8 TWh** (pre-inverse-storage AGSI+ figure; see T4 note).
+All targets fit within installed capacity.
+
+The binding constraint for all scenarios is the **end-of-season operational floor**:
+the 0.5 TWh minimum required at 31 March (embedded as a hard constraint in the simulation
+from Phase 1 T1 fix).  With the 75/25 blend the engineering curve maintains sufficient
+withdrawal rate throughout, so the season-end floor — not rate or volume — is the tight
+constraint.
 
 ### Import capacity ceiling benchmark (P99, cold days)
 
 Under the most favourable defensible import assumption — P99 of imports on cold days
-(top-20% storage-withdrawal days per month) — the season target falls to **6.58 TWh
-(14.5% fill)**.  This is almost entirely driven by the withdrawal-rate constraint in
-January: even with generous imports, storage must start with enough gas to maintain
-deliverability through mid-season.
+(top-20% storage-withdrawal days per month) — the season target falls to **7.08 TWh
+(17.4% fill)**.  The end-of-season floor is still binding at this level; even with
+generous imports, the simulation must end with ≥ 0.5 TWh on 31 March.
 
 ### Key assumption sensitivities (S2 season target)
 
 | WC assumption | Import assumption | 1-Oct target |
 |---|---|---|
-| Empirical P95 | S2 scenarios | 31.8 TWh |
-| **Blend 75/25** | **S2 scenarios** | **21.9 TWh (default)** |
+| Empirical P95 | S2 scenarios | ~31.8 TWh |
+| **Blend 75/25** | **S2 scenarios** | **22.5 TWh (default)** |
 | ENTSOG engineering | S2 scenarios | ~14 TWh |
-| Blend 75/25 | P99 cold days | 6.6 TWh |
+| Blend 75/25 | P99 cold days | 7.1 TWh |
 
 The 7–32 TWh range represents the full span of defensible choices.
-**S2 / blend (21.9 TWh, ~48% fill) is the recommended anchor.**
+**S2 / blend (22.5 TWh, ~55% fill) is the recommended anchor.**
 
 ### Interpretation
 
-**The credible planning anchor is S2 (~22 TWh, 48% fill).**  The blend WC curve
-reduces the target substantially from the purely empirical result (32 TWh) by
+**The credible planning anchor is S2 (~22.5 TWh, 55% fill).**  The blend WC curve
+reduces the target substantially from the purely empirical result (~32 TWh) by
 acknowledging that the observed P95 understates physical deliverability due to
-commercial suppression on cold days.
+commercial suppression on cold days.  The 0.5 TWh end-of-season floor (T1 fix)
+adds ~0.5 TWh versus the unconstrained result and changes the binding constraint
+from volume to the operational floor.
 
-**The binding physical constraint is withdrawal rate for the highest-stress scenario
-(S1), and volume for S2–S5.** Under the 75/25 blend the engineering curve keeps
-deliverability above the daily gap throughout the simulation for S2–S4 — it is
-running out of gas volume that is the limiting factor.  Under the purely empirical
-curve (which caps at ~127 GWh/d at 20% fill) S2–S4 would instead be withdrawal-rate
-limited, producing the higher 31.8 TWh target.  The choice of WC blend is therefore
-the dominant driver of both the constraint type and the headline number.
+**The binding physical constraint is the end-of-season operational floor for all
+scenarios** — the floor of 0.5 TWh at 31 March is what limits feasibility once the
+75/25 engineering-weighted curve keeps withdrawal rate adequate throughout the season.
+Under the purely empirical curve (which caps at ~127 GWh/d at low fill) S2–S4 would
+be withdrawal-rate limited instead, producing the higher ~31.8 TWh empirical target.
 
-The mandatory fill target must be set high enough that fill never reaches the zone
-where either constraint would bind — the headline TWh is the instrument, and the
-rate check is the reason that target must be met, not merely approximated.
-
-This finding means that a storage obligation expressed only in TWh is
-**incomplete** without a corresponding minimum rate check.
+The mandatory fill target must be set high enough that storage ends the season with
+at least the operational floor — a TWh-only obligation is **incomplete** without the
+accompanying rate check confirming the floor remains reachable throughout the season.
 
 ---
 
@@ -231,17 +233,17 @@ Starting-fill requirement (TWh) under alternative demand assumptions (blend WC, 
 
 | Scenario | Base (blend WC) | Peak +50 GWh/d | Peak −50 GWh/d |
 |---|---|---|---|
-| S1 | 25.2 | ~35 | ~18 |
-| S2 | 21.9 | ~30 | ~14 |
-| S3 | 17.0 | ~25 | ~11 |
-| S4 |  9.9 | ~16 |  ~5 |
-| S5 |  5.3 |  ~9 |  ~2 |
+| S1 | 25.7 | ~35 | ~18 |
+| S2 | 22.5 | ~30 | ~15 |
+| S3 | 17.5 | ~25 | ~12 |
+| S4 | 10.4 | ~17 |  ~6 |
+| S5 |  5.8 | ~10 |  ~3 |
 
 **Peak demand sensitivity** is meaningful: a 50 GWh/d uniform shift in the
 1-in-20 demand profile changes the S2 target by roughly ±7–8 TWh.  Demand
 forecasts should be treated as a material input, not a background parameter.
 
-S5's smaller absolute response (~4 TWh range) reflects its high-import regime
+S5's smaller absolute response (~7 TWh range) reflects its high-import regime
 (P70 imports absorb most of peak demand, so demand shifts have limited effect
 on the storage gap).  S4's response (~11 TWh range) is larger because at median
 imports the daily gap is more sensitive to demand variation.

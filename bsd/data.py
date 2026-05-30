@@ -158,6 +158,15 @@ def load_daily_imports(
     daily["year"] = daily["date"].dt.year
     daily["is_winter"] = daily["month"].isin(WINTER_MONTHS)
 
+    # German gas storage levy flag: in force 2022-10-01 – 2024-12-31.
+    # The levy (~€2.5/MWh) raised Czech entry costs and suppressed observed
+    # import utilisation; percentiles pooled across levy/non-levy days may
+    # understate today's (post-2025) reliable import capacity.
+    # See bsd.constants.GAS_STORAGE_LEVY_START / GAS_STORAGE_LEVY_END.
+    levy_start = pd.Timestamp("2022-10-01")
+    levy_end   = pd.Timestamp("2024-12-31")
+    daily["levy_in_force"] = (daily["date"] >= levy_start) & (daily["date"] <= levy_end)
+
     return daily.sort_values("date").reset_index(drop=True)
 
 

@@ -43,6 +43,8 @@ from .constants import (
     STRESS_PEAK_DAYS,
     STRESS_RESIDUAL_DAYS,
     WINTER_MONTHS,
+    GAS_STORAGE_LEVY_START,
+    GAS_STORAGE_LEVY_END,
 )
 
 # -- scenarios ----------------------------------------------------------------

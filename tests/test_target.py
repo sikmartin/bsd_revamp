@@ -20,11 +20,11 @@ def setup():
 # ── Published S1–S5 headlines ───────────────────────────────────────────────
 
 @pytest.mark.parametrize("key,expected_twh", [
-    ("S1", 25.2),
-    ("S2", 21.9),
-    ("S3", 17.0),
-    ("S4",  9.9),
-    ("S5",  5.3),
+    ("S1", 25.7),
+    ("S2", 22.45),
+    ("S3", 17.5),
+    ("S4", 10.4),
+    ("S5",  5.8),
 ])
 def test_season_targets(setup, key, expected_twh):
     results, *_ = setup
@@ -32,15 +32,10 @@ def test_season_targets(setup, key, expected_twh):
     assert abs(got - expected_twh) <= TOL, f"{key}: got {got}, expected {expected_twh}"
 
 
-def test_s1_binding_withdrawal_rate(setup):
+@pytest.mark.parametrize("key", ["S1", "S2", "S3", "S4", "S5"])
+def test_all_binding_end_of_season_floor(setup, key):
     results, *_ = setup
-    assert results["S1"]["binding"] == "withdrawal rate"
-
-
-@pytest.mark.parametrize("key", ["S2", "S3", "S4", "S5"])
-def test_s2_s5_binding_volume(setup, key):
-    results, *_ = setup
-    assert results[key]["binding"] == "volume"
+    assert results[key]["binding"] == "end-of-season floor"
 
 
 # ── Simulate unit tests ──────────────────────────────────────────────────────
@@ -59,7 +54,7 @@ def test_simulate_infeasible_at_zero_s1(setup):
 
 def test_simulate_returns_headroom_trajectory(setup):
     _, imp, wc_func, prof = setup
-    r = bsd.simulate(50.0, "S2", imp, wc_func, prof.peak)
+    r = bsd.simulate(70.0, "S2", imp, wc_func, prof.peak)  # 70% > S2 min (~55%)
     # 182 days total (31+30+31+31+28+31)
     assert len(r["headroom_trajectory"]) == 182
 
@@ -73,7 +68,7 @@ def test_build_day_series_length(setup):
 def test_min_start_fill_s2(setup):
     _, imp, wc_func, prof = setup
     f = bsd.min_start_fill("S2", imp, wc_func, prof.peak)
-    assert abs(f * bsd.CAPACITY_TWH / 100 - 21.9) <= TOL
+    assert abs(f * bsd.CAPACITY_TWH / 100 - 22.45) <= TOL
 
 
 def test_sensitivity_table_shape(setup):
@@ -83,5 +78,5 @@ def test_sensitivity_table_shape(setup):
         peak_shifts=(0.0, +50.0, -50.0),
     )
     assert df.shape == (5, 3)
-    assert abs(df.loc["S2", "base_TWh"] - 21.9) <= TOL
-    assert abs(df.loc["S2", "peak +50_TWh"] - 30.48) <= 0.5
+    assert abs(df.loc["S2", "base_TWh"] - 22.45) <= TOL
+    assert abs(df.loc["S2", "peak +50_TWh"] - 30.06) <= 0.5

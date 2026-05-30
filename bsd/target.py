@@ -53,6 +53,7 @@ def simulate(
     capacity_TWh: float = CAPACITY_TWH,
     month_order: list[int] = MONTH_ORDER,
     days_in_month: dict[int, int] = DAYS_IN_MONTH,
+    end_of_march_floor_TWh: float = 0.5,
 ) -> dict:
     """Simulate the full Oct–Mar season from a given starting fill.
 
@@ -68,6 +69,12 @@ def simulate(
         Withdrawal-capacity callable: fill_pct → max deliverable GWh/d.
     peak_demand:
         pd.Series indexed by month_num; 1-in-20 peak-day demand (GWh/d).
+    end_of_march_floor_TWh:
+        Minimum required fill at end of March 31 (TWh).  The simulation is
+        infeasible if the season ends below this floor, which represents the
+        ~0.5 TWh operational reserve recommended as a standalone regulatory
+        instrument (covers ~5 days of the S2 March peak gap before injection
+        season begins).  Set to 0.0 to disable.
 
     Returns
     -------
@@ -99,6 +106,13 @@ def simulate(
         if fill_traj[t + 1] < -1e-9:
             feasible = False; day_inf = t; binding = "volume"; break
 
+    # End-of-March operational floor (applied after season completes)
+    if feasible and end_of_march_floor_TWh > 0:
+        end_fill_TWh = fill_traj[n] * capacity_TWh / 100
+        if end_fill_TWh < end_of_march_floor_TWh - 1e-9:
+            feasible = False
+            binding  = "end-of-season floor"
+
     valid = day_inf if day_inf is not None else n
     return {
         "feasible":             feasible,
@@ -124,6 +138,7 @@ def min_start_fill(
     hi: float = 100.0,
     month_order: list[int] = MONTH_ORDER,
     days_in_month: dict[int, int] = DAYS_IN_MONTH,
+    end_of_march_floor_TWh: float = 0.5,
 ) -> float | None:
     """Bisect for the minimum feasible 1-October starting fill (%).
 
@@ -137,6 +152,7 @@ def min_start_fill(
         capacity_TWh=capacity_TWh,
         month_order=month_order,
         days_in_month=days_in_month,
+        end_of_march_floor_TWh=end_of_march_floor_TWh,
     )
 
     def _sim(fp: float) -> bool:
@@ -164,6 +180,7 @@ def run_all_scenarios(
     capacity_TWh: float = CAPACITY_TWH,
     month_order: list[int] = MONTH_ORDER,
     days_in_month: dict[int, int] = DAYS_IN_MONTH,
+    end_of_march_floor_TWh: float = 0.5,
 ) -> dict:
     """Run season-target bisection for all scenarios.
 
@@ -177,6 +194,7 @@ def run_all_scenarios(
             capacity_TWh=capacity_TWh,
             month_order=month_order,
             days_in_month=days_in_month,
+            end_of_march_floor_TWh=end_of_march_floor_TWh,
         )
         sim = simulate(
             f if f is not None else 0.0,
@@ -184,6 +202,7 @@ def run_all_scenarios(
             capacity_TWh=capacity_TWh,
             month_order=month_order,
             days_in_month=days_in_month,
+            end_of_march_floor_TWh=end_of_march_floor_TWh,
         ) if f is not None else None
 
         # Determine binding constraint by probing just below minimum fill
@@ -195,6 +214,7 @@ def run_all_scenarios(
                 capacity_TWh=capacity_TWh,
                 month_order=month_order,
                 days_in_month=days_in_month,
+                end_of_march_floor_TWh=end_of_march_floor_TWh,
             )
             binding = probe["binding_constraint"] or "volume"
 
