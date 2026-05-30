@@ -310,12 +310,19 @@ results, sensitivity tables and charts are documented in
 
 ### Headline storage targets (minimum 1-October fill)
 
+> **Numbers updated 2026-05-30:** figures below supersede those recorded here before
+> Phase 1 reconciliation.  The earlier figures (S2 = 31.8 TWh, S1 = 34.4 TWh) used
+> the purely empirical P95 withdrawal curve.  Current figures use the blended WC curve
+> (75% engineering / 25% empirical, 10% haircut on engineering) — see
+> [`docs/wc_blend_decision.md`](wc_blend_decision.md) and
+> [`docs/storage_target_results.md`](storage_target_results.md) for full detail.
+
 | Scenario | Start fill (%) | Start fill (TWh) | Binding constraint |
 |---|---|---|---|
-| S1 — High stress    | 76.0 | **34.4** | Withdrawal rate |
-| S2 — Stressed       | 70.1 | **31.8** | Withdrawal rate |
-| S3 — Base stressed  | 58.6 | **26.5** | Withdrawal rate |
-| S4 — Median         | 38.7 | **17.5** | Withdrawal rate |
+| S1 — High stress    | 55.7 | **25.2** | Withdrawal rate |
+| S2 — Stressed       | 48.4 | **21.9** | Volume |
+| S3 — Base stressed  | 37.6 | **17.0** | Volume |
+| S4 — Median         | 21.9 |  **9.9** | Volume |
 | S5 — Favourable     | 11.7 |  **5.3** | Volume |
 
 Czech UGS working-gas capacity: **45.3 TWh**.  All targets are within
@@ -323,13 +330,16 @@ installed capacity.
 
 ### Key finding on binding constraint
 
-In S1–S4 the simulation is not constrained by running out of gas
-volume — it is constrained by **withdrawal rate**.  Once storage fill
-drops below roughly 20% the isotonic relative curve caps deliverability
-at ~127 GWh/d, which is below the daily gap in the stressed months.
-The mandatory fill target must therefore be set high enough that fill
-never reaches this critical zone, not merely high enough to hold
-sufficient total energy.
+Under the 75/25 blended WC curve, only **S1** is withdrawal-rate constrained.
+For S2–S4, the engineering-weighted curve keeps deliverability above the daily
+gap throughout the simulation; what limits the target is running out of gas
+volume.  Under the purely empirical P95 curve (pre-blend), S2–S4 were also
+withdrawal-rate limited, producing the higher pre-blend targets (31.8 TWh for S2).
+
+The blend weight is therefore the dominant modelling choice — see
+`docs/wc_blend_decision.md`.  Regardless of which constraint binds, the policy
+implication is unchanged: the mandatory fill target must be set high enough that
+fill never reaches the zone where either constraint would bind.
 
 ![Fill trajectories](../figs/storage_target_fill_trajectories.png)
 
@@ -360,17 +370,24 @@ The season-long simulation (Branch 2, Section 8) answers the question of how muc
 
 ### Headline monthly obligations (minimum fill at month start, TWh)
 
+> **Numbers updated 2026-05-30:** figures below supersede those recorded here before
+> Phase 1 reconciliation.  The earlier figures (e.g. S2 Jan = 14.88 TWh) used the
+> purely empirical P95 withdrawal curve.  Current figures use the blended WC curve
+> (50% engineering / 50% empirical, 10% haircut) — see
+> [`docs/wc_blend_decision.md`](wc_blend_decision.md) and
+> [`docs/storage_obligations_results.md`](storage_obligations_results.md) for full detail.
+
 | Month | S1 — High stress | **S2 — Stressed** | S3 — Base | S4 — Median | S5 — Favourable |
 |---|---|---|---|---|---|
 | Oct | 0.00 | **0.00** | 0.00 | 0.00 | 0.00 |
 | Nov | 1.36 | **1.00** | 0.10 | 0.00 | 0.00 |
-| Dec | 12.89 | **12.75** | 12.48 | 0.46 | 0.00 |
-| Jan | 16.08 | **14.88** | 13.37 | 11.81 | 0.67 |
-| Feb | 13.46 | **12.56** | 11.41 | 1.30 | 0.58 |
+| Dec | 4.88 | **4.46** | 3.67 | 0.46 | 0.00 |
+| Jan | 11.57 | **9.33** | 6.36 | 2.31 | 0.67 |
+| Feb | 6.66 | **3.90** | 2.19 | 1.30 | 0.58 |
 | Mar | 1.19 | **0.34** | 0.20 | 0.00 | 0.00 |
 | + Mar 31 floor | — | **~0.50** | ~0.50 | ~0.50 | ~0.50 |
 
-★ Withdrawal-rate binding in Dec–Feb for S1–S3 (same physical constraint as Branch 2).
+★ Withdrawal-rate binding in Dec–Jan for S1–S2 (see `storage_obligations_results.md`).
 
 **S2 is the recommended regulatory anchor** — pairing a 1-in-20 demand event with a 1-in-5 import shortfall gives a joint severity of approximately 1-in-40 under realistic demand/import correlation (see Section 9.1), or 1-in-100 under the independence assumption.  S1 is the physical-infrastructure stress case (see Section 9.1).
 
@@ -399,4 +416,4 @@ Post-2022 Physical Flow data (272 overlapping winter days, Jan 2025–Mar 2026) 
 The following items were scoped but not implemented and remain as the next phase of work on Branch 2 (`storage_target.ipynb`):
 
 1. **Stochastic import draws** — replace fixed monthly percentiles with sampled draws from the empirical import distribution to produce a distribution of required starting fills rather than five point estimates.
-2. **Summer injection feasibility** — verify that the Branch 2 starting-fill targets (up to 34.4 TWh for S1) are achievable given realistic Apr–Sep injection rates and EU filling-obligation constraints.
+2. **Summer injection feasibility** — verify that the Branch 2 starting-fill targets (up to 25.2 TWh for S1) are achievable given realistic Apr–Sep injection rates and EU filling-obligation constraints.

@@ -55,9 +55,9 @@ a conservative upper-bound framing (see Caveats).
 | Scenario | Import basis | Start fill (%) | Start fill (TWh) | Binding constraint |
 |---|---|---|---|---|
 | S1 — High stress    | P10 imports | **55.7** | **25.2** | Withdrawal rate |
-| S2 — Stressed       | P20 imports | **48.4** | **21.9** | Withdrawal rate |
-| S3 — Base stressed  | P30 imports | **37.6** | **17.0** | Withdrawal rate |
-| S4 — Median         | P50 imports | **21.9** |  **9.9** | Withdrawal rate |
+| S2 — Stressed       | P20 imports | **48.4** | **21.9** | Volume |
+| S3 — Base stressed  | P30 imports | **37.6** | **17.0** | Volume |
+| S4 — Median         | P50 imports | **21.9** |  **9.9** | Volume |
 | S5 — Favourable     | P70 imports | **11.7** |  **5.3** | Volume |
 
 Czech UGS total working-gas capacity: **45.3 TWh**.  All targets fit within
@@ -90,10 +90,17 @@ reduces the target substantially from the purely empirical result (32 TWh) by
 acknowledging that the observed P95 understates physical deliverability due to
 commercial suppression on cold days.
 
-**The binding physical constraint remains withdrawal rate, not volume (S1–S4).**
-The simulation is limited by how fast gas can be delivered as fill falls, not by
-total energy.  The mandatory fill target must be set high enough that fill does not
-reach the critical zone (~20%) where deliverability constrains the daily gap.
+**The binding physical constraint is withdrawal rate for the highest-stress scenario
+(S1), and volume for S2–S5.** Under the 75/25 blend the engineering curve keeps
+deliverability above the daily gap throughout the simulation for S2–S4 — it is
+running out of gas volume that is the limiting factor.  Under the purely empirical
+curve (which caps at ~127 GWh/d at 20% fill) S2–S4 would instead be withdrawal-rate
+limited, producing the higher 31.8 TWh target.  The choice of WC blend is therefore
+the dominant driver of both the constraint type and the headline number.
+
+The mandatory fill target must be set high enough that fill never reaches the zone
+where either constraint would bind — the headline TWh is the instrument, and the
+rate check is the reason that target must be met, not merely approximated.
 
 This finding means that a storage obligation expressed only in TWh is
 **incomplete** without a corresponding minimum rate check.
