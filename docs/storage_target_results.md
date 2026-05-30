@@ -232,14 +232,19 @@ Starting-fill requirement (TWh) under alternative demand assumptions (blend WC, 
 | Scenario | Base (blend WC) | Peak +50 GWh/d | Peak −50 GWh/d |
 |---|---|---|---|
 | S1 | 25.2 | ~35 | ~18 |
-| S2 | 21.9 | ~30 | ~15 |
-| S3 | 17.0 | ~25 | ~10 |
-| S4 |  9.9 | ~18 |  ~4 |
-| S5 |  5.3 | ~17 |  ~2 |
+| S2 | 21.9 | ~30 | ~14 |
+| S3 | 17.0 | ~25 | ~11 |
+| S4 |  9.9 | ~16 |  ~5 |
+| S5 |  5.3 |  ~9 |  ~2 |
 
 **Peak demand sensitivity** is meaningful: a 50 GWh/d uniform shift in the
 1-in-20 demand profile changes the S2 target by roughly ±7–8 TWh.  Demand
 forecasts should be treated as a material input, not a background parameter.
+
+S5's smaller absolute response (~4 TWh range) reflects its high-import regime
+(P70 imports absorb most of peak demand, so demand shifts have limited effect
+on the storage gap).  S4's response (~11 TWh range) is larger because at median
+imports the daily gap is more sensitive to demand variation.
 
 **Withdrawal curve and import ceiling sensitivities** are summarised in the
 assumption sensitivity table above.  The WC assumption is the dominant driver

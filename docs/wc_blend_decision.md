@@ -129,4 +129,6 @@ commit with an explanation.
 
 **Please confirm or redirect before Phase 2 begins.**
 
-Confimed
+---
+
+**Confirmed — 2026-05-30.** Proceed with divergent blends (50/50 for Branch 1, 75/25 for Branch 2) as recommended above.
