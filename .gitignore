@@ -4,3 +4,8 @@ __pycache__/
 .DS_Store
 .ipynb_checkpoints/
 *.pyc
+
+# Exclude dependency files that confuse Streamlit Cloud deployment
+uv.lock
+pyproject.toml
+environment.yml
