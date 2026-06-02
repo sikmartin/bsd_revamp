@@ -1,7 +1,5 @@
 """Project-wide constants for the Czech UGS storage sizing models."""
 
-from .data import WINTER_MONTHS  # re-export; defined once in data.py
-
 # Working-gas capacity: GIE AGSI+ aggregate for Czech UGS, pre-inverse-storage era.
 # Source: AGSI+ snapshot from before inverse storage was permitted (~2021/22 data).
 # UPDATE: re-verify against current GIE AGSI+ "max gas in storage" CZ aggregate
@@ -11,11 +9,22 @@ CAPACITY_TWH: float = 40.7739
 CAPACITY_GWH: float = CAPACITY_TWH * 1000
 
 MONTH_ORDER: list[int] = [10, 11, 12, 1, 2, 3]
-MONTH_NAMES: dict[int, str] = {10: "Oct", 11: "Nov", 12: "Dec",
-                                1: "Jan", 2: "Feb", 3: "Mar"}
+WINTER_MONTHS: set[int] = set(MONTH_ORDER)
+MONTH_NAMES: dict[int, str] = {
+    10: "Oct",
+    11: "Nov",
+    12: "Dec",
+    1: "Jan",
+    2: "Feb",
+    3: "Mar",
+}
 MONTH_NUM: dict[str, int] = {
-    "october": 10, "november": 11, "december": 12,
-    "january": 1,  "february": 2,  "march": 3,
+    "october": 10,
+    "november": 11,
+    "december": 12,
+    "january": 1,
+    "february": 2,
+    "march": 3,
 }
 DAYS_IN_MONTH: dict[int, int] = {10: 31, 11: 30, 12: 31, 1: 31, 2: 28, 3: 31}
 
@@ -31,7 +40,13 @@ WC_MIN_OBS: int = 5
 WC_DEFAULT_HAIRCUT: float = 0.10
 
 # Cold-day import conditioning
-COLD_DAY_QUANTILE: float = 0.80
+COLD_DAY_THRESHOLD_QUANTILE: float = 0.80
+
+# End-of-March operational reserve floor (Branch 1 and Branch 2).
+# Recommended as a standalone regulatory instrument: ~0.5 TWh covers roughly
+# 5 days of the S2 March peak gap before injection season begins.
+# Set to 0.0 in individual function calls to disable.
+END_OF_SEASON_FLOOR_TWH: float = 0.5
 
 # German gas storage levy (Gasspeicherumlage) — raised Czech import costs ~€2.5/MWh
 # while in force, suppressing observed import utilisation.  Import percentiles computed
@@ -40,4 +55,4 @@ COLD_DAY_QUANTILE: float = 0.80
 # End:   2024-12-31 (abolished from 2025-01-01 per BNetzA announcement Nov 2024)
 # Reference: Argus Media, "Germany to stop gas storage levy on transit from 2025"
 GAS_STORAGE_LEVY_START: str = "2022-10-01"
-GAS_STORAGE_LEVY_END: str   = "2024-12-31"
+GAS_STORAGE_LEVY_END: str = "2024-12-31"

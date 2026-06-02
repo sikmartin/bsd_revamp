@@ -1,6 +1,5 @@
 """Withdrawal-capacity curves: empirical P95 isotonic fit, ENTSOG engineering, and blends."""
 
-from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,12 +13,12 @@ from sklearn.isotonic import IsotonicRegression
 from .constants import (
     WC_BIN_EDGES, WC_BIN_QUANTILE, WC_MIN_OBS, WC_DEFAULT_HAIRCUT, MONTH_ORDER
 )
-from .data import DATA_PATH_STORAGE_GIE, DEFAULT_CUTOFF, WINTER_MONTHS
+from .data import DATA_PATH_STORAGE_GIE, DATA_PATH_WTHDRW_CURVE, DEFAULT_CUTOFF, WINTER_MONTHS, load_storage_gie
 
 
 @dataclass
 class WcCurves:
-    """Container for the three withdrawal-capacity curves fitted from a single dataset.
+    """Container for three withdrawal-capacity curves and a reference capacity value.
 
     ``empirical``     — relative isotonic P95 (ratio-scaled to WC_CURRENT): conservative floor.
     ``empirical_abs`` — absolute isotonic P95: not ratio-scaled; used for sensitivity only.
@@ -44,9 +43,9 @@ class WcCurves:
 
 def fit_withdrawal_curves(
     *,
-    gio_path: str | Path = DATA_PATH_STORAGE_GIE,
+    gie_path: str | Path = DATA_PATH_STORAGE_GIE,
     cutoff: str | None = DEFAULT_CUTOFF,
-    eng_path: str | Path = "data/cz_usg_withdrawal_curve_2025.csv",
+    eng_path: str | Path = DATA_PATH_WTHDRW_CURVE,
     haircut: float = WC_DEFAULT_HAIRCUT,
     bin_quantile: float = WC_BIN_QUANTILE,
     min_obs: int = WC_MIN_OBS,
@@ -56,7 +55,7 @@ def fit_withdrawal_curves(
 
     Parameters
     ----------
-    gio_path:
+    gie_path:
         Path to the GIE storage CSV (semicolon-separated).
     cutoff:
         Include only observations on or after this date (post-2022 default).
@@ -69,23 +68,9 @@ def fit_withdrawal_curves(
     min_obs:
         Minimum observations per 5%-bin for it to be included in the isotonic fit.
     """
-    raw = pd.read_csv(
-        gio_path, sep=";",
-        parse_dates=["Gas Day Start (status at 6AM  CEST)"],
-        dayfirst=False, decimal=".",
-    )
-    raw.columns = raw.columns.str.strip()
-    raw = raw.rename(columns={
-        "Gas Day Start (status at 6AM  CEST)": "date",
-        "Full (%)":                            "fill_pct",
-        "Withdrawal (GWh/d)":                  "withdrawal",
-        "Withdrawal capacity (GWh/d)":         "wc_declared",
-    })
-    sto = raw[["date", "fill_pct", "withdrawal", "wc_declared"]].dropna()
+    sto = load_storage_gie(gie_path, cutoff=cutoff)
     sto["month"] = sto["date"].dt.month
-    wint = sto[
-        (sto["date"] >= cutoff) & sto["month"].isin(WINTER_MONTHS)
-    ].copy()
+    wint = sto[sto["month"].isin(WINTER_MONTHS)].copy()
     wint["util_ratio"] = wint["withdrawal"] / wint["wc_declared"]
 
     # WC_CURRENT: declared capacity on the latest data day

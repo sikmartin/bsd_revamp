@@ -29,15 +29,17 @@ Design notes
   callers restrict to the post-break period, which is the default.
 - Storage entry points are excluded by default because they represent
   withdrawal from/injection into Czech UGS facilities, not cross-border flows.
-- The export file (exit direction) covers from January 2025 only; the demand
-  proxy is therefore limited to that window for correlation analysis.
+- The export file (exit direction) covers from March 2022 onwards, but the
+  domestic exit points (``Distribution`` and ``Final Consumers``) are only
+  populated from January 2025.  The demand proxy is therefore limited to that
+  narrower window for correlation analysis.
 """
-
-from __future__ import annotations
 
 from pathlib import Path
 
 import pandas as pd
+
+from .constants import WINTER_MONTHS, GAS_STORAGE_LEVY_START, GAS_STORAGE_LEVY_END
 
 # ---------------------------------------------------------------------------
 # Public constants
@@ -70,9 +72,6 @@ DEFAULT_CUTOFF = pd.Timestamp("2022-03-01")
 
 #: Adjacent-system label used for domestic storage withdrawal flows.
 STORAGE_LABEL = "Storage"
-
-#: Winter months (gas-heating season, October through March).
-WINTER_MONTHS = {10, 11, 12, 1, 2, 3}
 
 
 # ---------------------------------------------------------------------------
@@ -158,14 +157,10 @@ def load_daily_imports(
     daily["year"] = daily["date"].dt.year
     daily["is_winter"] = daily["month"].isin(WINTER_MONTHS)
 
-    # German gas storage levy flag: in force 2022-10-01 – 2024-12-31.
-    # The levy (~€2.5/MWh) raised Czech entry costs and suppressed observed
-    # import utilisation; percentiles pooled across levy/non-levy days may
-    # understate today's (post-2025) reliable import capacity.
-    # See bsd.constants.GAS_STORAGE_LEVY_START / GAS_STORAGE_LEVY_END.
-    levy_start = pd.Timestamp("2022-10-01")
-    levy_end   = pd.Timestamp("2024-12-31")
-    daily["levy_in_force"] = (daily["date"] >= levy_start) & (daily["date"] <= levy_end)
+    # German import levy; see bsd.constants.
+    daily["levy_in_force"] = (daily["date"] >= pd.Timestamp(GAS_STORAGE_LEVY_START)) & (
+        daily["date"] <= pd.Timestamp(GAS_STORAGE_LEVY_END)
+    )
 
     return daily.sort_values("date").reset_index(drop=True)
 
@@ -266,17 +261,15 @@ def load_demand_proxy(
     indicator: str = "Physical Flow",
     cutoff: pd.Timestamp = DEFAULT_CUTOFF,
 ) -> pd.DataFrame:
-    """Return a daily domestic gas demand proxy for the Czech balancing zone.
+    """Return a merged DataFrame of daily domestic demand and total imports.
 
-    Domestic demand is approximated as exit flows to ``Distribution`` and
-    ``Final Consumers`` — the two categories that represent physical delivery
-    to Czech end users.  This avoids the need to reconstruct demand from a
-    flow balance (which would require consistent storage net-withdrawal data).
+    Joins the domestic-only exit flows (``Distribution`` + ``Final Consumers``)
+    with total entry flows on ``date``, keeping only days present in both
+    series (inner join).  Intended for demand/import correlation analysis.
 
-    Use for demand/import correlation analysis.  Note that the distribution
-    category may exclude some very large industrial consumers connected
-    directly to the transmission system; coverage is nonetheless sufficient
-    for percentile-level correlation tests.
+    Note: the distribution category may exclude some very large industrial
+    consumers connected directly to the transmission system; coverage is
+    nonetheless sufficient for percentile-level correlation tests.
 
     Returns
     -------
@@ -295,6 +288,44 @@ def load_demand_proxy(
     merged = demand.merge(imports[["date", "imports_GWh_d"]], on="date", how="inner")
 
     return merged
+
+
+def load_storage_gie(
+    path: str | Path,
+    cutoff: pd.Timestamp | str | None = DEFAULT_CUTOFF,
+) -> pd.DataFrame:
+    """Return daily GIE storage data for the Czech balancing zone.
+
+    Parses the semicolon-separated GIE AGSI+ CSV and returns a clean DataFrame
+    with standardised column names.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: ``date``, ``fill_pct``, ``withdrawal``, ``wc_declared``.
+        Rows with any NaN in those columns are dropped.  Filtered to
+        ``date >= cutoff``.
+    """
+    raw = pd.read_csv(
+        path,
+        sep=";",
+        parse_dates=["Gas Day Start (status at 6AM  CEST)"],
+        dayfirst=False,
+        decimal=".",
+    )
+    raw.columns = raw.columns.str.strip()
+    raw = raw.rename(
+        columns={
+            "Gas Day Start (status at 6AM  CEST)": "date",
+            "Full (%)": "fill_pct",
+            "Withdrawal (GWh/d)": "withdrawal",
+            "Withdrawal capacity (GWh/d)": "wc_declared",
+        }
+    )
+    sto = raw[["date", "fill_pct", "withdrawal", "wc_declared"]].dropna()
+    if cutoff is not None:
+        sto = sto[sto["date"] >= cutoff]
+    return sto.reset_index(drop=True)
 
 
 def gas_winter_label(date_series: pd.Series) -> pd.Series:

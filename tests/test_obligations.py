@@ -25,7 +25,7 @@ def setup():
     (12, 4.12),
     (1,  8.54),
     (2,  3.62),
-    (3,  0.34),
+    (3,  0.84),
 ])
 def test_s2_obligations(setup, month, expected):
     results, *_ = setup

@@ -1,7 +1,5 @@
 """Demand-profile loading for the Czech balancing zone stress models."""
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import NamedTuple
 
@@ -13,9 +11,10 @@ from .data import DATA_PATH_DEMAND_PEAK, DATA_PATH_DEMAND_30DAY
 
 class DemandProfile(NamedTuple):
     """Per-month demand Series, all indexed by integer month number (1–12)."""
-    peak: pd.Series      # 1-in-20 peak-day demand, GWh/d (R.max.den)
+
+    peak: pd.Series  # 1-in-20 peak-day demand, GWh/d (R.max.den)
     residual: pd.Series  # residual average for days 8–30, GWh/d
-    total: pd.Series     # 30-day total demand, GWh (r_30dnu)
+    total: pd.Series  # 30-day total demand, GWh (r_30dnu)
 
 
 def load_demand_profile(
@@ -48,12 +47,17 @@ def load_demand_profile(
     return DemandProfile(peak=peak, residual=residual, total=total)
 
 
-def demand_profile_table(profile: DemandProfile, month_names: dict[int, str] | None = None) -> pd.DataFrame:
+def demand_profile_table(
+    profile: DemandProfile, month_names: dict[int, str] | None = None
+) -> pd.DataFrame:
     """Format the demand profile as a display DataFrame."""
     from .constants import MONTH_NAMES
+
     names = month_names or MONTH_NAMES
-    return pd.DataFrame({
-        "Peak 7d (GWh/d)":      profile.peak.round(1),
-        "Residual 23d (GWh/d)": profile.residual.round(1),
-        "Total 30d (GWh)":      profile.total.round(0),
-    }).rename(index=names)
+    return pd.DataFrame(
+        {
+            "Peak 7d (GWh/d)": profile.peak.round(1),
+            "Residual 23d (GWh/d)": profile.residual.round(1),
+            "Total 30d (GWh)": profile.total.round(0),
+        }
+    ).rename(index=names)

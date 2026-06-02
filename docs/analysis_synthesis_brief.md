@@ -104,6 +104,9 @@ calendar months using:
 | Feb | 327 |
 | Mar | 245 |
 
+> **Data provenance — `r_max_den_2025-2026.csv` and `r_30dnu_2025-2026.csv`**
+> Both files contain official values calculated for the Czech supply security standard (BSD — Bezpečnostní standard dodávky) for the 2025/2026 season.  The monthly `R.max.den` figures (peak 7-day demand) and `r_30dnu` figures (30-day period demand) are determined administratively and depend on: (a) the projected climate scenario applied for that season, and (b) the composition and behavioural profile of protected customers.  The 2025/2026 values are **lower than the preceding seasons** because regulators applied reduced coefficients; this directly flows through to lower computed obligations (Branch 1) and a lower season-long storage target (Branch 2).  Future revisions of these inputs — driven by climate-change projections or changes in the protected-customer base — will shift both outputs proportionally.
+
 ### Monthly results — S2 (P20 imports) and S5 (P70 imports)
 
 | Month | P20 import (GWh/d) | Gap S2 (GWh/d) | Storage S2 (TWh) | P70 import (GWh/d) | Gap S5 (GWh/d) | Storage S5 (TWh) |
@@ -361,7 +364,7 @@ The season-long simulation (Branch 2, Section 8) answers the question of how muc
 
 ### Design choices specific to Branch 1
 
-**Two-tier demand profile.**  The regulation requires coverage of both a 7-day extreme cold spell (`R.max.den`) and a broader 30-day period (`r_30dnu`).  The Czech implementation embeds both in a single 30-day stress test: 7 days at peak, 23 days at the residual average implied by `r_30dnu`.
+**Two-tier demand profile.**  The regulation requires coverage of both a 7-day extreme cold spell (`R.max.den`) and a broader 30-day period (`r_30dnu`).  The Czech implementation embeds both in a single 30-day stress test: 7 days at peak, 23 days at the residual average implied by `r_30dnu`.  Both series are taken from the official BSD 2025/2026 season values (see data provenance note in §3); they are lower than prior seasons due to reduced coefficients, which reduces obligations.
 
 **Monthly independence.**  Each month is a standalone stress test — "can we survive a 30-day event *starting this month*?"  The 1-in-20 event occurs once per season; no carry-forward between months is needed.
 

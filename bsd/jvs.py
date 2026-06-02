@@ -17,7 +17,6 @@ Poznámky:
 - Výchozí font je CzechiaSans; pokud není dostupný, Matplotlib použije fallback.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 from cycler import cycler

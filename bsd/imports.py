@@ -1,13 +1,17 @@
 """Import-capacity computations: scenario percentiles and P99 cold-day benchmarks."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import pandas as pd
 
-from .constants import MONTH_ORDER, MONTH_NAMES, COLD_DAY_QUANTILE
-from .data import DATA_PATH_IMPORTS, DATA_PATH_STORAGE_GIE, DEFAULT_CUTOFF, load_daily_imports, WINTER_MONTHS
+from .constants import MONTH_ORDER, MONTH_NAMES, COLD_DAY_THRESHOLD_QUANTILE
+from .data import (
+    DATA_PATH_IMPORTS,
+    DATA_PATH_STORAGE_GIE,
+    DEFAULT_CUTOFF,
+    load_daily_imports,
+    load_storage_gie,
+)
 
 
 def compute_monthly_imports(
@@ -37,49 +41,43 @@ def compute_monthly_imports(
     for key, sc in scenarios.items():
         pct = sc.percentile if hasattr(sc, "percentile") else sc["percentile"]
         result[key] = pd.Series(
-            {m: winter[winter["month"] == m]["GWh_d"].quantile(pct / 100)
-             for m in month_order}
+            {
+                m: winter[winter["month"] == m]["GWh_d"].quantile(pct / 100)
+                for m in month_order
+            }
         )
     return result
 
 
-def compute_p99_imports(
+def compute_import_benchmarks(
     *,
     imports_path: str | Path = DATA_PATH_IMPORTS,
-    gio_path: str | Path = DATA_PATH_STORAGE_GIE,
+    gie_path: str | Path = DATA_PATH_STORAGE_GIE,
     cutoff: str | None = DEFAULT_CUTOFF,
     month_order: list[int] = MONTH_ORDER,
-    cold_day_quantile: float = COLD_DAY_QUANTILE,
+    cold_day_quantile: float = COLD_DAY_THRESHOLD_QUANTILE,
+    benchmark_quantile: float = 0.99,
 ) -> tuple[pd.Series, pd.Series]:
-    """Compute P99 import benchmarks: cold-day conditional and unconditional.
+    """Compute import benchmarks: cold-day conditional and unconditional.
 
     Cold days are defined as days in the top ``cold_day_quantile`` of
     storage-withdrawal magnitude within each month (post-``cutoff`` winters).
+    The benchmark percentile applied to imports on those days is controlled
+    by ``benchmark_quantile`` (default P99).
 
     Returns
     -------
-    (p99_cold, p99_unconditional) — each a pd.Series indexed by month_num (GWh/d).
+    (conditional, unconditional) — each a pd.Series indexed by month_num (GWh/d).
     """
     daily = load_daily_imports(imports_path, cutoff=cutoff)
     winter = daily[daily["month"].isin(month_order)].copy()
 
-    sto_raw = pd.read_csv(
-        gio_path, sep=";",
-        parse_dates=["Gas Day Start (status at 6AM  CEST)"],
-    )
-    sto_raw.columns = sto_raw.columns.str.strip()
-    sto_raw = sto_raw.rename(columns={
-        "Gas Day Start (status at 6AM  CEST)": "date",
-        "Withdrawal (GWh/d)": "withdrawal",
-    })
-    sto_raw["date_key"] = pd.to_datetime(sto_raw["date"]).dt.normalize()
+    sto = load_storage_gie(gie_path, cutoff=cutoff)
+    sto["date_key"] = sto["date"].dt.normalize()
 
     merged = winter.copy()
     merged["date_key"] = merged["date"].dt.normalize()
-    merged = merged.merge(
-        sto_raw[["date_key", "withdrawal"]].dropna(),
-        on="date_key", how="inner",
-    )
+    merged = merged.merge(sto[["date_key", "withdrawal"]], on="date_key", how="inner")
 
     cold_mask = pd.Series(False, index=merged.index)
     for m in month_order:
@@ -87,15 +85,21 @@ def compute_p99_imports(
         thresh = merged.loc[mask, "withdrawal"].quantile(cold_day_quantile)
         cold_mask = cold_mask | (mask & (merged["withdrawal"] >= thresh))
 
-    p99_cold = pd.Series(
-        {m: merged.loc[(merged["month"] == m) & cold_mask, "GWh_d"].quantile(0.99)
-         for m in month_order}
+    conditional = pd.Series(
+        {
+            m: merged.loc[(merged["month"] == m) & cold_mask, "GWh_d"].quantile(
+                benchmark_quantile
+            )
+            for m in month_order
+        }
     )
-    p99_uncond = pd.Series(
-        {m: merged[merged["month"] == m]["GWh_d"].quantile(0.99)
-         for m in month_order}
+    unconditional = pd.Series(
+        {
+            m: merged[merged["month"] == m]["GWh_d"].quantile(benchmark_quantile)
+            for m in month_order
+        }
     )
-    return p99_cold, p99_uncond
+    return conditional, unconditional
 
 
 def import_table(

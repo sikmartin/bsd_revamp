@@ -5,14 +5,16 @@ Each month is a standalone 30-day stress test: 7 peak days at R.max.den,
 1-Oct/1-Nov/.../1-Mar fill that keeps the simulation feasible.
 """
 
-from __future__ import annotations
-
 from typing import Callable
 
 import pandas as pd
 
 from .constants import (
-    CAPACITY_TWH, STRESS_PEAK_DAYS, STRESS_RESIDUAL_DAYS, MONTH_NAMES,
+    CAPACITY_TWH,
+    STRESS_PEAK_DAYS,
+    STRESS_RESIDUAL_DAYS,
+    MONTH_NAMES,
+    END_OF_SEASON_FLOOR_TWH,
 )
 
 
@@ -25,6 +27,7 @@ def simulate_month(
     residual_demand: pd.Series,
     *,
     capacity_TWh: float = CAPACITY_TWH,
+    end_of_march_floor_TWh: float = END_OF_SEASON_FLOOR_TWH,
 ) -> dict:
     """Simulate the 30-day Art. 6 stress event for one calendar month.
 
@@ -50,7 +53,7 @@ def simulate_month(
     dict with keys: feasible (bool), binding (str|None), day (int|None),
     fill_end (float), fill_trajectory (list[float]).
     """
-    gap_peak  = max(0.0, float(peak_demand[month])    - imp_GWh_d)
+    gap_peak = max(0.0, float(peak_demand[month]) - imp_GWh_d)
     gap_resid = max(0.0, float(residual_demand[month]) - imp_GWh_d)
     gaps = [gap_peak] * STRESS_PEAK_DAYS + [gap_resid] * STRESS_RESIDUAL_DAYS
 
@@ -60,16 +63,42 @@ def simulate_month(
 
     for t, g in enumerate(gaps):
         if wc_func(fill) < g - 1e-9:
-            return {"feasible": False, "binding": "withdrawal rate",
-                    "day": t, "fill_end": fill, "fill_trajectory": traj}
+            return {
+                "feasible": False,
+                "binding": "withdrawal rate",
+                "day": t,
+                "fill_end": fill,
+                "fill_trajectory": traj,
+            }
         fill -= g * delta
         if fill < -1e-9:
-            return {"feasible": False, "binding": "volume",
-                    "day": t, "fill_end": fill, "fill_trajectory": traj}
+            return {
+                "feasible": False,
+                "binding": "volume",
+                "day": t,
+                "fill_end": fill,
+                "fill_trajectory": traj,
+            }
         traj.append(fill)
 
-    return {"feasible": True, "binding": None,
-            "day": None, "fill_end": fill, "fill_trajectory": traj}
+    # End-of-March operational floor (standalone regulatory instrument)
+    if month == 3 and end_of_march_floor_TWh > 0:
+        if fill * capacity_TWh / 100 < end_of_march_floor_TWh - 1e-9:
+            return {
+                "feasible": False,
+                "binding": "end-of-season floor",
+                "day": None,
+                "fill_end": fill,
+                "fill_trajectory": traj,
+            }
+
+    return {
+        "feasible": True,
+        "binding": None,
+        "day": None,
+        "fill_end": fill,
+        "fill_trajectory": traj,
+    }
 
 
 def min_start_fill_month(
@@ -83,16 +112,24 @@ def min_start_fill_month(
     tol: float = 0.01,
     lo: float = 0.0,
     hi: float = 100.0,
+    end_of_march_floor_TWh: float = END_OF_SEASON_FLOOR_TWH,
 ) -> float | None:
     """Bisect for the minimum feasible starting fill (%) for one month.
 
     Returns ``None`` if infeasible even at ``hi`` (100% fill).
     Returns ``lo`` (0.0) if already feasible with no gas.
     """
+
     def _sim(fp: float) -> bool:
         return simulate_month(
-            fp, month, imp_GWh_d, wc_func, peak_demand, residual_demand,
+            fp,
+            month,
+            imp_GWh_d,
+            wc_func,
+            peak_demand,
+            residual_demand,
             capacity_TWh=capacity_TWh,
+            end_of_march_floor_TWh=end_of_march_floor_TWh,
         )["feasible"]
 
     if not _sim(hi):
@@ -117,6 +154,7 @@ def run_all_months(
     *,
     capacity_TWh: float = CAPACITY_TWH,
     month_order: list[int] | None = None,
+    end_of_march_floor_TWh: float = END_OF_SEASON_FLOOR_TWH,
 ) -> dict:
     """Run monthly obligations for all scenarios and months.
 
@@ -124,6 +162,7 @@ def run_all_months(
     start_fill_TWh, binding, fill_end, sim}.
     """
     from .constants import MONTH_ORDER
+
     mo = month_order or MONTH_ORDER
 
     results: dict = {}
@@ -132,26 +171,44 @@ def run_all_months(
         for m in mo:
             imp = float(monthly_imports[key][m])
             f = min_start_fill_month(
-                m, imp, wc_func, peak_demand, residual_demand,
+                m,
+                imp,
+                wc_func,
+                peak_demand,
+                residual_demand,
                 capacity_TWh=capacity_TWh,
+                end_of_march_floor_TWh=end_of_march_floor_TWh,
             )
             sim = simulate_month(
                 f if f is not None else 100.0,
-                m, imp, wc_func, peak_demand, residual_demand,
+                m,
+                imp,
+                wc_func,
+                peak_demand,
+                residual_demand,
                 capacity_TWh=capacity_TWh,
+                end_of_march_floor_TWh=end_of_march_floor_TWh,
             )
             # Determine binding constraint by probing just below the minimum fill
             if f is None:
                 binding = "infeasible at 100%"
             else:
                 probe = simulate_month(
-                    max(0.0, f - 0.05), m, imp, wc_func, peak_demand, residual_demand,
+                    max(0.0, f - 0.05),
+                    m,
+                    imp,
+                    wc_func,
+                    peak_demand,
+                    residual_demand,
                     capacity_TWh=capacity_TWh,
+                    end_of_march_floor_TWh=end_of_march_floor_TWh,
                 )
                 binding = probe["binding"] or "volume"
             results[key][m] = {
                 "start_fill_pct": f,
-                "start_fill_TWh": None if f is None else round(f * capacity_TWh / 100, 2),
+                "start_fill_TWh": None
+                if f is None
+                else round(f * capacity_TWh / 100, 2),
                 "binding": binding,
                 "fill_end": sim["fill_end"],
                 "sim": sim,
@@ -168,12 +225,18 @@ def obligations_table(
 ) -> pd.DataFrame:
     """Format obligations as a TWh DataFrame (months × scenarios)."""
     from .constants import MONTH_ORDER
+
     mo = month_order or MONTH_ORDER
     mn = month_names or MONTH_NAMES
     df = pd.DataFrame(
-        {key: {mn[m]: results[key][m]["start_fill_TWh"] for m in mo}
-         for key in scenarios}
+        {
+            key: {mn[m]: results[key][m]["start_fill_TWh"] for m in mo}
+            for key in scenarios
+        }
     )
-    sc_labels = {k: (v.label if hasattr(v, "label") else v["label"]) for k, v in scenarios.items()}
+    sc_labels = {
+        k: (v.label if hasattr(v, "label") else v["label"])
+        for k, v in scenarios.items()
+    }
     df.columns = [sc_labels[k] for k in scenarios]
     return df

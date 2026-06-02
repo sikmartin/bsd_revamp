@@ -10,11 +10,14 @@ Constants
 Scenarios
     Scenario, DEFAULT_SCENARIOS, DEFAULT_SCENARIOS_DICT
 
+Data loaders
+    load_storage_gie
+
 Demand
     DemandProfile, load_demand_profile, demand_profile_table
 
 Imports
-    compute_monthly_imports, compute_p99_imports, import_table
+    compute_monthly_imports, compute_import_benchmarks, import_table
 
 Withdrawal curves
     WcCurves, fit_withdrawal_curves
@@ -30,7 +33,6 @@ Modules (accessible as bsd.data, bsd.jvs, etc.)
 data       Load and clean ENTSOG / GIE data files.
 jvs        Czech-authority chart styling and colour palettes.
 plot       Plot helpers (extended in Phase 2+).
-capacity   LEGACY flat model — superseded by obligations / target.
 """
 
 # -- constants ----------------------------------------------------------------
@@ -45,6 +47,7 @@ from .constants import (
     WINTER_MONTHS,
     GAS_STORAGE_LEVY_START,
     GAS_STORAGE_LEVY_END,
+    END_OF_SEASON_FLOOR_TWH,
 )
 
 # -- scenarios ----------------------------------------------------------------
@@ -54,7 +57,10 @@ from .scenarios import Scenario, DEFAULT_SCENARIOS, DEFAULT_SCENARIOS_DICT
 from .demand import DemandProfile, load_demand_profile, demand_profile_table
 
 # -- imports ------------------------------------------------------------------
-from .imports import compute_monthly_imports, compute_p99_imports, import_table
+from .imports import compute_monthly_imports, compute_import_benchmarks, import_table
+
+# -- data loaders -------------------------------------------------------------
+from .data import load_storage_gie
 
 # -- withdrawal curves --------------------------------------------------------
 from .withdrawal import WcCurves, fit_withdrawal_curves
@@ -83,12 +89,15 @@ __all__ = [
     # constants
     "CAPACITY_TWH", "CAPACITY_GWH", "MONTH_ORDER", "MONTH_NAMES",
     "DAYS_IN_MONTH", "STRESS_PEAK_DAYS", "STRESS_RESIDUAL_DAYS", "WINTER_MONTHS",
+    "END_OF_SEASON_FLOOR_TWH",
     # scenarios
     "Scenario", "DEFAULT_SCENARIOS", "DEFAULT_SCENARIOS_DICT",
     # demand
     "DemandProfile", "load_demand_profile", "demand_profile_table",
+    # data loaders
+    "load_storage_gie",
     # imports
-    "compute_monthly_imports", "compute_p99_imports", "import_table",
+    "compute_monthly_imports", "compute_import_benchmarks", "import_table",
     # withdrawal
     "WcCurves", "fit_withdrawal_curves",
     # branch 1

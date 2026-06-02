@@ -16,7 +16,6 @@ scenario_bar              — horizontal bar chart of 30-day storage requirement
 source_stacked_area       — corridor-level stacked area chart
 """
 
-from __future__ import annotations
 
 import matplotlib.dates as mdates
 import matplotlib.patches as mpatches

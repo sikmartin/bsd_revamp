@@ -32,7 +32,7 @@ def load_data():
     prof   = bsd.load_demand_profile()
     curves = bsd.fit_withdrawal_curves()
     imp    = bsd.compute_monthly_imports(bsd.DEFAULT_SCENARIOS_DICT)
-    p99c, p99u = bsd.compute_p99_imports()
+    p99c, p99u = bsd.compute_import_benchmarks()
     return prof, curves, imp, p99c, p99u
 
 prof, curves, base_imp, p99_cold, p99_uncond = load_data()

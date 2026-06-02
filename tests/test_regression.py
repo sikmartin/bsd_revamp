@@ -4,8 +4,8 @@ tests/test_regression.py — Golden-output tests against the real ENTSOG export.
 These tests load the actual data file and assert that key outputs match the
 values manually validated during the analysis session.  They serve as a
 change-detection net: if filtering logic, unit conversion, the cutoff, or
-the rolling-average window is accidentally altered, these tests will fail and
-make the change visible before it propagates into a report.
+aggregation is accidentally altered, these tests will fail and make the change
+visible before it propagates into a report.
 
 The tolerance on floating-point comparisons is deliberately loose (rel=0.005,
 i.e. half a percent) because the data file may be refreshed with more recent
@@ -17,7 +17,7 @@ Skipping behaviour
 ------------------
 If the data file is absent (e.g. in CI without the raw data), every test in
 this module is skipped automatically.  The unit tests in test_data.py and
-test_capacity.py still provide full logic coverage in that case.
+test_obligations.py still provide full logic coverage in that case.
 """
 
 from pathlib import Path
@@ -25,15 +25,15 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+import bsd
 import bsd.data as bdata
-import bsd.capacity as bcap
+from bsd.imports import compute_monthly_imports
 
 # ---------------------------------------------------------------------------
 # Shared fixture
 # ---------------------------------------------------------------------------
 
 DATA_PATH = bdata.DATA_PATH_IMPORTS
-PEAK_DEMAND = 370.0
 
 pytestmark = pytest.mark.skipif(
     not DATA_PATH.exists(),
@@ -47,8 +47,13 @@ def daily():
 
 
 @pytest.fixture(scope="module")
-def results(daily):
-    return bcap.storage_scenarios(daily, peak_demand_GWh_d=PEAK_DEMAND)
+def winter(daily):
+    return daily[daily["month"].isin(bsd.WINTER_MONTHS)].copy()
+
+
+@pytest.fixture(scope="module")
+def monthly_imports():
+    return compute_monthly_imports(bsd.DEFAULT_SCENARIOS_DICT)
 
 
 # ---------------------------------------------------------------------------
@@ -91,15 +96,13 @@ class TestDataLoadRegression:
         assert daily["date"].min() >= bdata.DEFAULT_CUTOFF
         assert daily["date"].max().year >= 2025
 
-    def test_gwh_magnitude_is_plausible(self, daily):
+    def test_gwh_magnitude_is_plausible(self, winter):
         """Winter median import should be between 150 and 500 GWh/d.
 
         Values outside this range would indicate a unit-conversion error or
         incorrect indicator selection.
         """
-        winter_median = bcap.winter_daily(daily)["GWh_d"].median()
-        assert 150 < winter_median < 500, \
-            f"Winter median {winter_median:.1f} GWh/d is outside plausible range"
+        assert 150 < winter["GWh_d"].median() < 500
 
 
 # ---------------------------------------------------------------------------
@@ -108,33 +111,33 @@ class TestDataLoadRegression:
 
 class TestPercentileRegression:
 
-    def test_winter_p10_in_expected_range(self, daily):
+    def test_winter_p10_in_expected_range(self, winter):
         """Winter P10 (single-day) should be near 135 GWh/d."""
-        p10 = bcap.winter_daily(daily)["GWh_d"].quantile(0.10)
+        p10 = winter["GWh_d"].quantile(0.10)
         assert 100 < p10 < 180, f"Winter P10 = {p10:.1f}, outside expected range"
 
-    def test_winter_p50_in_expected_range(self, daily):
+    def test_winter_p50_in_expected_range(self, winter):
         """Winter median should be near 243 GWh/d."""
-        p50 = bcap.winter_daily(daily)["GWh_d"].median()
+        p50 = winter["GWh_d"].median()
         assert 180 < p50 < 320, f"Winter P50 = {p50:.1f}, outside expected range"
 
-    def test_winter_p90_in_expected_range(self, daily):
-        """Winter P90 should be near 370 GWh/d — close to the peak demand figure."""
-        p90 = bcap.winter_daily(daily)["GWh_d"].quantile(0.90)
+    def test_winter_p90_in_expected_range(self, winter):
+        """Winter P90 should be near 370 GWh/d."""
+        p90 = winter["GWh_d"].quantile(0.90)
         assert 300 < p90 < 500, f"Winter P90 = {p90:.1f}, outside expected range"
 
-    def test_rolling30_p10_below_daily_p10(self, daily):
+    def test_rolling30_p10_above_daily_p10(self, daily, winter):
         """The 30-day rolling average P10 should be higher than the single-day P10.
 
         Rolling averages smooth out the tails: the lowest 30-day average is
         higher than the single lowest day because sustained multi-week cold
         spells are less extreme than the single worst day.
         """
-        enriched = bcap.add_rolling_avg(daily, window=30)
-        winter = bcap.winter_daily(enriched).dropna(subset=["roll30_avg_GWh_d"])
+        roll = daily["GWh_d"].rolling(30, min_periods=30).mean()
+        winter_roll = roll[daily["month"].isin(bsd.WINTER_MONTHS)].dropna()
 
-        daily_p10 = bcap.winter_daily(daily)["GWh_d"].quantile(0.10)
-        roll_p10 = winter["roll30_avg_GWh_d"].quantile(0.10)
+        daily_p10 = winter["GWh_d"].quantile(0.10)
+        roll_p10 = winter_roll.quantile(0.10)
 
         assert roll_p10 > daily_p10, (
             f"Rolling P10 ({roll_p10:.1f}) should be > single-day P10 ({daily_p10:.1f})"
@@ -142,64 +145,55 @@ class TestPercentileRegression:
 
 
 # ---------------------------------------------------------------------------
-# Scenario table regression tests
+# Monthly import scenario regression tests
 # ---------------------------------------------------------------------------
 
-class TestScenarioTableRegression:
+class TestMonthlyImportRegression:
 
-    def test_five_scenarios_returned(self, results):
-        assert len(results) == 5
+    def test_five_scenarios_returned(self, monthly_imports):
+        assert len(monthly_imports) == 5
 
-    def test_storage_requirement_decreases_from_s1_to_s5(self, results):
-        """More favourable import scenarios require less storage."""
-        storage_values = results["storage_30d_TWh"].tolist()
-        assert storage_values == sorted(storage_values, reverse=True), \
-            f"Storage requirements not monotonically decreasing: {storage_values}"
+    def test_scenario_ordering(self, monthly_imports):
+        """For every winter month, S1 ≤ S2 ≤ ... ≤ S5 (lower percentile = lower imports)."""
+        keys = list(bsd.DEFAULT_SCENARIOS_DICT.keys())
+        for m in bsd.MONTH_ORDER:
+            values = [monthly_imports[k][m] for k in keys]
+            assert values == sorted(values), \
+                f"Month {m}: scenario imports not monotonically increasing: {values}"
 
-    def test_all_storage_requirements_positive(self, results):
-        """At 370 GWh/d peak demand, every scenario requires some storage."""
-        assert (results["storage_30d_TWh"] > 0).all()
+    def test_all_imports_positive(self, monthly_imports):
+        for key, series in monthly_imports.items():
+            assert (series > 0).all(), f"Scenario {key} has non-positive import values"
 
-    def test_s1_storage_near_validated_value(self, results):
-        """S1 (P10 imports) should produce ~6.5 TWh storage requirement."""
-        s1 = results.loc[results["import_percentile"] == 10, "storage_30d_TWh"].iloc[0]
-        assert 5.0 < s1 < 8.0, f"S1 storage = {s1:.2f} TWh, outside expected range"
+    def test_s1_jan_in_expected_range(self, monthly_imports):
+        """S1 January imports should be near 113 GWh/d."""
+        s1_jan = monthly_imports["S1"][1]
+        assert 80 < s1_jan < 160, f"S1 Jan = {s1_jan:.1f}, outside expected range"
 
-    def test_s4_storage_near_validated_value(self, results):
-        """S4 (P50 imports) should produce ~3.9 TWh storage requirement."""
-        s4 = results.loc[results["import_percentile"] == 50, "storage_30d_TWh"].iloc[0]
-        assert 2.5 < s4 < 5.0, f"S4 storage = {s4:.2f} TWh, outside expected range"
-
-    def test_daily_gap_consistent_with_storage(self, results):
-        """storage_30d_GWh should equal daily_gap_GWh_d × 30 for every row."""
-        for _, row in results.iterrows():
-            expected = row["daily_gap_GWh_d"] * 30
-            assert abs(row["storage_30d_GWh"] - expected) < 2.0, \
-                f"Inconsistency in {row['label']}: gap×30={expected:.0f} ≠ storage={row['storage_30d_GWh']:.0f}"
-
-    def test_twh_consistent_with_gwh(self, results):
-        """storage_30d_TWh must equal storage_30d_GWh / 1000."""
-        for _, row in results.iterrows():
-            assert abs(row["storage_30d_TWh"] - row["storage_30d_GWh"] / 1000) < 0.01, \
-                f"TWh/GWh inconsistency in {row['label']}"
+    def test_s4_jan_in_expected_range(self, monthly_imports):
+        """S4 (median) January imports should be near 214 GWh/d."""
+        s4_jan = monthly_imports["S4"][1]
+        assert 150 < s4_jan < 300, f"S4 Jan = {s4_jan:.1f}, outside expected range"
 
 
 # ---------------------------------------------------------------------------
-# Seasonal peaks regression test
+# Seasonal peaks regression tests
 # ---------------------------------------------------------------------------
 
 class TestSeasonalPeaksRegression:
 
-    def test_post_2022_seasons_present(self, daily):
-        peaks = bcap.seasonal_peaks(daily)
+    def test_post_2022_seasons_present(self, winter):
+        w = winter.copy()
+        w["gas_winter"] = bdata.gas_winter_label(w["date"])
+        seasons = w["gas_winter"].dropna().unique()
         for season in ["2022/23", "2023/24", "2024/25"]:
-            assert season in peaks.index, f"Season {season} missing from seasonal_peaks"
+            assert season in seasons, f"Season {season} missing"
 
     def test_2021_22_peak_above_post_2022_peaks(self, daily):
         """Winter 2021/22 (transitional) should have a higher peak than later winters."""
-        peaks = bcap.seasonal_peaks(daily)
+        w = daily[daily["month"].isin(bsd.WINTER_MONTHS)].copy()
+        w["gas_winter"] = bdata.gas_winter_label(w["date"])
+        peaks = w.groupby("gas_winter")["GWh_d"].max()
         if "2021/22" in peaks.index:
-            peak_2122 = peaks.loc["2021/22", "peak_GWh_d"]
-            later_peaks = peaks.loc[["2022/23", "2023/24", "2024/25"], "peak_GWh_d"]
-            assert peak_2122 > later_peaks.max(), \
+            assert peaks["2021/22"] > peaks[["2022/23", "2023/24", "2024/25"]].max(), \
                 "2021/22 peak should exceed all post-2022 season peaks"

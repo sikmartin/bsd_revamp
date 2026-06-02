@@ -7,6 +7,31 @@
 ## Rules
 - Always use uv to execute Python (including ipython, jupyter) code
 
+# Abbreviations
+
+**Domain-specific (critical context)**
+- **BSD** — Bezpečnostní Standard Dodávek (Supply Security Standard), per §73a of the Czech Energy Act
+- **UGS** — Underground Gas Storage
+- **WC** — Withdrawal Curve (NOT "water content")
+- **AGSI+** — Aggregated Inventory of Gas Storage Information Plus
+- **ENTSOG** — European Network of Transmission System Operators for Gas (Transparency Platform)
+- **GIE** — Gas Infrastructure Europe (AGSI+ data provider)
+- **NET4GAS** — Czech gas operator
+- **BNetzA** — Bundesnetzagentur (German regulatory authority)
+- **EnSiG** — Energiesicherungsgesetz (German Energy Security Act)
+
+**Demand profile data fields (Czech regulatory)**
+- **R.max.den** — Peak demand data (1-in-20, MWh/d)
+- **r_30dnu** — 30-day total demand data (MWh)
+
+**Code variable names**
+- **wc** — withdrawal curves (function parameter/variable)
+- **eng** — engineering (variable name for engineering curve)
+- **fp** — fill percentage (function parameter)
+
+**Scenario labels**
+- **S1–S5** — Five import scenarios (10th, 30th, 50th, 70th, 90th percentiles)
+
 # Project scope
 
 **Name**
