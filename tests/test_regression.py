@@ -2,7 +2,7 @@
 tests/test_regression.py — Golden-output tests against the real ENTSOG export.
 
 These tests load the actual data file and assert that key outputs match the
-values manually validated during the analysis session.  They serve as a
+values manually validated during the analysis session. They serve as a
 change-detection net: if filtering logic, unit conversion, the cutoff, or
 aggregation is accidentally altered, these tests will fail and make the change
 visible before it propagates into a report.
@@ -93,7 +93,7 @@ class TestDataLoadRegression:
 
     def test_date_range(self, daily):
         """The dataset must start at or after the cutoff and end in 2025 or later."""
-        assert daily["date"].min() >= bdata.DEFAULT_CUTOFF
+        assert daily["date"].min() >= pd.Timestamp(bdata.DEFAULT_CUTOFF)
         assert daily["date"].max().year >= 2025
 
     def test_gwh_magnitude_is_plausible(self, winter):

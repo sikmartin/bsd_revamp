@@ -39,39 +39,20 @@ from pathlib import Path
 
 import pandas as pd
 
-from .constants import WINTER_MONTHS, GAS_STORAGE_LEVY_START, GAS_STORAGE_LEVY_END
-
-# ---------------------------------------------------------------------------
-# Public constants
-# ---------------------------------------------------------------------------
-
-#: Path to ENTSOG aggregated import data for the Czech balancing zone.
-DATA_PATH_IMPORTS = Path("data/cz_gas_imports_2020-2026.csv")
-
-#: Path to ENTSOG aggregated export data for the Czech balancing zone.
-DATA_PATH_EXPORTS = Path("data/cz_gas_exports_2020-2026.csv")
-
-#: Path to month-specific 1-in-20 peak demand data (MWh/d).
-DATA_PATH_DEMAND_PEAK = Path("data/r_max_den_2025-2026.csv")
-
-#: Path to month-specific 30-day total demand data (MWh).
-DATA_PATH_DEMAND_30DAY = Path("data/r_30dnu_2025-2026.csv")
-
-#: Path to GIE storage fill-level time series (2011–present).
-DATA_PATH_STORAGE_GIE = Path("data/StorageData_GIE_2011-01-01_2026-05-28.csv")
-
-#: Path to the ENTSOG winter outlooks and rewiews withdrawal and injection curvea
-# https://www.entsog.eu/outlooks-reviews#winter-outlooks-and-reviews
-DATA_PATH_WTHDRW_CURVE = Path("data/cz_usg_withdrawal_curve_2025.csv")
-DATA_PATH_INJCTN_CURVE = Path("data/cz_usg_injection_curve_2025.csv")
-
-
-#: Default structural-break cutoff.  Pre-2022 data reflects Russian transit
-#: volumes and commercial behaviours that are no longer representative.
-DEFAULT_CUTOFF = pd.Timestamp("2022-03-01")
-
-#: Adjacent-system label used for domestic storage withdrawal flows.
-STORAGE_LABEL = "Storage"
+from .constants import (
+    WINTER_MONTHS,
+    GAS_STORAGE_LEVY_START,
+    GAS_STORAGE_LEVY_END,
+    DATA_PATH_IMPORTS,
+    DATA_PATH_EXPORTS,
+    DATA_PATH_DEMAND_PEAK,
+    DATA_PATH_DEMAND_30DAY,
+    DATA_PATH_STORAGE_GIE,
+    DATA_PATH_WTHDRW_CURVE,
+    DATA_PATH_INJCTN_CURVE,
+    STORAGE_LABEL,
+    DEFAULT_CUTOFF,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -104,9 +85,9 @@ def _read_raw(path: str | Path) -> pd.DataFrame:
 
 
 def load_daily_imports(
-    path: str | Path,
+    path: str | Path = DATA_PATH_IMPORTS,
     indicator: str = "Physical Flow",
-    cutoff: pd.Timestamp = DEFAULT_CUTOFF,
+    cutoff: str | pd.Timestamp | None = DEFAULT_CUTOFF,
     exclude_storage: bool = True,
 ) -> pd.DataFrame:
     """Return total daily entry flows into the Czech balancing zone.
@@ -137,10 +118,13 @@ def load_daily_imports(
         Columns: ``date`` (datetime), ``GWh_d`` (float), ``month`` (int),
         ``year`` (int), ``is_winter`` (bool).
     """
+    cutoff = pd.Timestamp(cutoff) if cutoff is not None else None
     df = _read_raw(path)
 
     # Filter to the requested indicator and time window.
-    mask = (df["indicator"] == indicator) & (df["date"] >= cutoff)
+    mask = df["indicator"] == indicator
+    if cutoff is not None:
+        mask &= df["date"] >= cutoff
     if exclude_storage:
         mask &= df["adjacentSystemsLabel"] != STORAGE_LABEL
 
@@ -166,9 +150,9 @@ def load_daily_imports(
 
 
 def load_daily_imports_by_source(
-    path: str | Path,
+    path: str | Path = DATA_PATH_IMPORTS,
     indicator: str = "Physical Flow",
-    cutoff: pd.Timestamp = DEFAULT_CUTOFF,
+    cutoff: str | pd.Timestamp | None = DEFAULT_CUTOFF,
     exclude_storage: bool = True,
 ) -> pd.DataFrame:
     """Return daily entry flows broken down by adjacent system (corridor).
@@ -179,9 +163,12 @@ def load_daily_imports_by_source(
     This is useful for understanding which corridors are active on
     high-import vs. low-import days, and for corridor-level stress tests.
     """
+    cutoff = pd.Timestamp(cutoff) if cutoff is not None else None
     df = _read_raw(path)
 
-    mask = (df["indicator"] == indicator) & (df["date"] >= cutoff)
+    mask = df["indicator"] == indicator
+    if cutoff is not None:
+        mask &= df["date"] >= cutoff
     if exclude_storage:
         mask &= df["adjacentSystemsLabel"] != STORAGE_LABEL
 
@@ -205,9 +192,9 @@ def load_daily_imports_by_source(
 
 
 def load_daily_exports(
-    path: str | Path,
+    path: str | Path = DATA_PATH_EXPORTS,
     indicator: str = "Physical Flow",
-    cutoff: pd.Timestamp = DEFAULT_CUTOFF,
+    cutoff: str | pd.Timestamp | None = DEFAULT_CUTOFF,
     exclude_storage: bool = True,
     domestic_only: bool = False,
 ) -> pd.DataFrame:
@@ -234,9 +221,12 @@ def load_daily_exports(
     pd.DataFrame
         Columns: ``date``, ``GWh_d``, ``month``, ``year``, ``is_winter``.
     """
+    cutoff = pd.Timestamp(cutoff) if cutoff is not None else None
     df = _read_raw(path)
 
-    mask = (df["indicator"] == indicator) & (df["date"] >= cutoff)
+    mask = df["indicator"] == indicator
+    if cutoff is not None:
+        mask &= df["date"] >= cutoff
     if domestic_only:
         mask &= df["adjacentSystemsLabel"].isin({"Distribution", "Final Consumers"})
     elif exclude_storage:
@@ -256,10 +246,10 @@ def load_daily_exports(
 
 
 def load_demand_proxy(
-    imports_path: str | Path,
-    exports_path: str | Path,
+    imports_path: str | Path = DATA_PATH_IMPORTS,
+    exports_path: str | Path = DATA_PATH_EXPORTS,
     indicator: str = "Physical Flow",
-    cutoff: pd.Timestamp = DEFAULT_CUTOFF,
+    cutoff: str | pd.Timestamp | None = DEFAULT_CUTOFF,
 ) -> pd.DataFrame:
     """Return a merged DataFrame of daily domestic demand and total imports.
 

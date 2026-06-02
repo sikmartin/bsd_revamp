@@ -73,6 +73,9 @@ def daily_imports_timeseries(
     -------
     matplotlib.figure.Figure
     """
+    if cutoff is not None:
+        cutoff = pd.Timestamp(cutoff)
+
     fig, ax = plt.subplots(figsize=(12, 4))
 
     ax.plot(

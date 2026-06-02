@@ -54,7 +54,7 @@ from .constants import (
 from .scenarios import Scenario, DEFAULT_SCENARIOS, DEFAULT_SCENARIOS_DICT
 
 # -- demand -------------------------------------------------------------------
-from .demand import DemandProfile, load_demand_profile, demand_profile_table
+from .demand_profile import DemandProfile, load_demand_profile, demand_profile_table
 
 # -- imports ------------------------------------------------------------------
 from .imports import compute_monthly_imports, compute_import_benchmarks, import_table

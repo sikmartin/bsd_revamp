@@ -1,5 +1,55 @@
 """Project-wide constants for the Czech UGS storage sizing models."""
 
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Data file paths — anchored to the package root so they work regardless of
+# the process working directory.
+# ---------------------------------------------------------------------------
+
+_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+#: Path to ENTSOG aggregated import data for the Czech balancing zone.
+DATA_PATH_IMPORTS = _DATA_DIR / "cz_gas_entry_2020-2026.csv"
+
+#: Path to ENTSOG aggregated export data for the Czech balancing zone.
+DATA_PATH_EXPORTS = _DATA_DIR / "cz_gas_exit_2020-2026.csv"
+
+#: Path to month-specific 1-in-20 peak demand data (MWh/d).
+DATA_PATH_DEMAND_PEAK = _DATA_DIR / "r_max_den_2025-2026.csv"
+
+#: Path to month-specific 30-day total demand data (MWh).
+DATA_PATH_DEMAND_30DAY = _DATA_DIR / "r_30dnu_2025-2026.csv"
+
+#: Path to GIE storage fill-level time series (2011–present).
+DATA_PATH_STORAGE_GIE = _DATA_DIR / "StorageData_GIE_2011-01-01_2026-05-28.csv"
+
+#: Path to the ENTSOG winter outlooks and reviews withdrawal and injection curves.
+# https://www.entsog.eu/outlooks-reviews#winter-outlooks-and-reviews
+DATA_PATH_WTHDRW_CURVE = _DATA_DIR / "cz_usg_withdrawal_curve_2025.csv"
+DATA_PATH_INJCTN_CURVE = _DATA_DIR / "cz_usg_injection_curve_2025.csv"
+
+#: Directory for notebook figure output, anchored to the project root so it
+#: resolves regardless of the kernel's working directory (no `%cd ..` needed).
+FIGS_DIR = _DATA_DIR.parent / "figs"
+
+#: Adjacent-system label used for domestic storage withdrawal flows.
+STORAGE_LABEL = "Storage"
+
+# ---------------------------------------------------------------------------
+# Structural-break cutoff
+# ---------------------------------------------------------------------------
+
+#: Default structural-break cutoff as an ISO date string.  Pre-2022 data
+#: reflects Russian transit volumes and commercial behaviours that are no
+#: longer representative.  Stored as a string (consistent with levy-date
+#: constants below) and converted to pd.Timestamp at the use site.
+DEFAULT_CUTOFF: str = "2022-03-01"
+
+# ---------------------------------------------------------------------------
+# Working-gas capacity
+# ---------------------------------------------------------------------------
+
 # Working-gas capacity: GIE AGSI+ aggregate for Czech UGS, pre-inverse-storage era.
 # Source: AGSI+ snapshot from before inverse storage was permitted (~2021/22 data).
 # UPDATE: re-verify against current GIE AGSI+ "max gas in storage" CZ aggregate
