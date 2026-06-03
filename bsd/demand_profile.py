@@ -5,8 +5,10 @@ from typing import NamedTuple
 
 import pandas as pd
 
-from .constants import MONTH_ORDER, MONTH_NUM, STRESS_PEAK_DAYS, STRESS_RESIDUAL_DAYS
-from .data import DATA_PATH_DEMAND_PEAK, DATA_PATH_DEMAND_30DAY
+from .constants import (
+    MONTH_ORDER, MONTH_NUM, STRESS_PEAK_DAYS, STRESS_RESIDUAL_DAYS,
+    DATA_PATH_DEMAND_PEAK, DATA_PATH_DEMAND_30DAY,
+)
 
 
 class DemandProfile(NamedTuple):

@@ -11,9 +11,10 @@ from scipy.interpolate import interp1d
 from sklearn.isotonic import IsotonicRegression
 
 from .constants import (
-    WC_BIN_EDGES, WC_BIN_QUANTILE, WC_MIN_OBS, WC_DEFAULT_HAIRCUT, MONTH_ORDER
+    WC_BIN_EDGES, WC_BIN_QUANTILE, WC_MIN_OBS, WC_DEFAULT_HAIRCUT, MONTH_ORDER,
+    DATA_PATH_STORAGE_GIE, DATA_PATH_WTHDRW_CURVE, DEFAULT_CUTOFF, WINTER_MONTHS,
 )
-from .data import DATA_PATH_STORAGE_GIE, DATA_PATH_WTHDRW_CURVE, DEFAULT_CUTOFF, WINTER_MONTHS, load_storage_gie
+from .data import load_storage_gie
 
 
 @dataclass

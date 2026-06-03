@@ -24,6 +24,7 @@ import matplotlib.ticker as mticker
 import pandas as pd
 
 from . import jvs
+from .constants import WINTER_MONTHS
 
 jvs.apply_style(theme="light", context="notebook")
 
@@ -131,7 +132,7 @@ def winter_daily_histogram(
     title:
         Chart title.
     """
-    from .data import WINTER_MONTHS
+
 
     if percentiles is None:
         percentiles = [10, 20, 30, 50, 70]
@@ -186,7 +187,7 @@ def winter_cdf(
     title:
         Chart title.
     """
-    from .data import WINTER_MONTHS
+
 
     winter_vals = daily.loc[daily["month"].isin(WINTER_MONTHS), "GWh_d"].sort_values()
     cdf = pd.Series(range(1, len(winter_vals) + 1), index=winter_vals.values) / len(winter_vals)
