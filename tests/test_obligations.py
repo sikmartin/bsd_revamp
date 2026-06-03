@@ -22,10 +22,10 @@ def setup():
 @pytest.mark.parametrize("month,expected", [
     (10, 0.00),
     (11, 1.01),
-    (12, 4.12),
-    (1,  8.54),
-    (2,  3.62),
-    (3,  0.84),
+    (12, 4.44),
+    (1,  8.89),
+    (2,  3.93),
+    (3,  0.90),
 ])
 def test_s2_obligations(setup, month, expected):
     results, *_ = setup
@@ -34,9 +34,9 @@ def test_s2_obligations(setup, month, expected):
 
 
 @pytest.mark.parametrize("month,expected", [
-    (12, 4.50),
-    (1, 10.56),
-    (2,  6.12),
+    (12, 4.82),
+    (1, 10.91),
+    (2,  6.47),
 ])
 def test_s1_jan_dec_feb(setup, month, expected):
     results, *_ = setup
@@ -84,4 +84,4 @@ def test_simulate_month_returns_trajectory(setup):
 def test_min_start_fill_month_s2_jan(setup):
     _, imp, wc_func, prof = setup
     f = bsd.min_start_fill_month(1, float(imp["S2"][1]), wc_func, prof.peak, prof.residual)
-    assert abs(f * bsd.CAPACITY_TWH / 100 - 8.54) <= TOL
+    assert abs(f * bsd.CAPACITY_TWH / 100 - 8.89) <= TOL

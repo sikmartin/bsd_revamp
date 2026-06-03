@@ -179,7 +179,7 @@ def winter_cdf(
     daily:
         Output of ``data.load_daily_imports()``.
     scenarios:
-        List of ``capacity.Scenario`` objects.  If provided, each scenario's
+        List of ``scenarios.Scenario`` objects.  If provided, each scenario's
         import percentile is marked on the CDF curve.
     peak_demand_GWh_d:
         If provided, draw a vertical line showing the 1-in-20 demand level
@@ -197,12 +197,12 @@ def winter_cdf(
 
     if scenarios is not None:
         for i, s in enumerate(scenarios):
-            val = winter_vals.quantile(s.import_percentile / 100)
+            val = winter_vals.quantile(s.percentile / 100)
             colour = SCENARIO_COLOURS[i % len(SCENARIO_COLOURS)]
-            ax.plot(val, s.import_percentile, "o", color=colour, markersize=6, zorder=5)
+            ax.plot(val, s.percentile, "o", color=colour, markersize=6, zorder=5)
             ax.annotate(
                 f" {s.label.split('—')[0].strip()}\n {val:.0f} GWh/d",
-                xy=(val, s.import_percentile),
+                xy=(val, s.percentile),
                 fontsize=7.5,
                 color=colour,
             )

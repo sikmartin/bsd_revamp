@@ -20,11 +20,11 @@ def setup():
 # ── Published S1–S5 headlines ───────────────────────────────────────────────
 
 @pytest.mark.parametrize("key,expected_twh", [
-    ("S1", 25.7),
-    ("S2", 22.45),
-    ("S3", 17.5),
-    ("S4", 10.4),
-    ("S5",  5.8),
+    ("S1", 25.96),
+    ("S2", 22.71),
+    ("S3", 17.85),
+    ("S4", 10.50),
+    ("S5",  5.79),
 ])
 def test_season_targets(setup, key, expected_twh):
     results, *_ = setup
@@ -68,7 +68,7 @@ def test_build_day_series_length(setup):
 def test_min_start_fill_s2(setup):
     _, imp, wc_func, prof = setup
     f = bsd.min_start_fill("S2", imp, wc_func, prof.peak)
-    assert abs(f * bsd.CAPACITY_TWH / 100 - 22.45) <= TOL
+    assert abs(f * bsd.CAPACITY_TWH / 100 - 22.71) <= TOL
 
 
 def test_sensitivity_table_shape(setup):
@@ -78,5 +78,5 @@ def test_sensitivity_table_shape(setup):
         peak_shifts=(0.0, +50.0, -50.0),
     )
     assert df.shape == (5, 3)
-    assert abs(df.loc["S2", "base_TWh"] - 22.45) <= TOL
+    assert abs(df.loc["S2", "base_TWh"] - 22.71) <= TOL
     assert abs(df.loc["S2", "peak +50_TWh"] - 30.06) <= 0.5

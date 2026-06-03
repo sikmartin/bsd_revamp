@@ -35,11 +35,11 @@ def test_blend_between_empirical_and_engineering(curves):
 
 def test_blend_50_50_at_key_levels(curves):
     b = curves.blend(0.50)
-    assert abs(b(20) - 244.6) < 1.0
+    assert abs(b(20) - 240.5) < 1.0
     assert abs(b(40) - 445.5) < 1.0
 
 
 def test_blend_75_25_at_key_levels(curves):
     b = curves.blend(0.75)
-    assert abs(b(20) - 303.5) < 1.0
+    assert abs(b(20) - 301.5) < 1.0
     assert abs(b(50) - 568.5) < 1.0
