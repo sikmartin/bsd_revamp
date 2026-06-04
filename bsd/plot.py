@@ -240,7 +240,7 @@ def scenario_bar(
     Parameters
     ----------
     results:
-        Output of ``capacity.storage_scenarios()``.
+        Output of ``scenarios.storage_scenarios()``.
     czechugs_capacity_TWh:
         Total Czech UGS working-gas capacity in TWh.  A reference line is
         drawn at this level so readers can see immediately which scenarios
@@ -250,8 +250,8 @@ def scenario_bar(
     """
     fig, ax = plt.subplots(figsize=(9, 4))
 
-    labels = results["label"].str.split("—").str[0].str.strip()
-    values = results["storage_30d_TWh"]
+    labels = results.index.str.split("—").str[0].str.strip().to_list()
+    values = results["storage_30d_TWh"].tolist()
     colours = SCENARIO_COLOURS[: len(results)]
 
     bars = ax.barh(labels, values, color=colours, alpha=0.85, height=0.55)
@@ -281,6 +281,10 @@ def scenario_bar(
     ax.set_title(title, fontsize=11, pad=8)
     ax.invert_yaxis()
     _apply_base_style(ax)
+    # _apply_base_style sets a numeric formatter on both axes; restore string
+    # labels on y since this chart uses categorical (scenario name) ticks.
+    ax.set_yticks(range(len(labels)))
+    ax.set_yticklabels(labels)
     fig.tight_layout()
     return fig
 

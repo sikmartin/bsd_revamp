@@ -44,7 +44,7 @@ STORAGE_LABEL = "Storage"
 #: reflects Russian transit volumes and commercial behaviours that are no
 #: longer representative.  Stored as a string (consistent with levy-date
 #: constants below) and converted to pd.Timestamp at the use site.
-DEFAULT_CUTOFF: str = "2022-03-01"
+DEFAULT_CUTOFF: str = "2022-04-01"
 
 # ---------------------------------------------------------------------------
 # Working-gas capacity
