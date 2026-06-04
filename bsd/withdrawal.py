@@ -19,16 +19,20 @@ from .data import load_storage_gie
 
 @dataclass
 class WcCurves:
-    """Container for three withdrawal-capacity curves and a reference capacity value.
+    """Container for withdrawal-capacity curves and a reference capacity value.
 
     ``empirical``     — relative isotonic P95 (ratio-scaled to WC_CURRENT): conservative floor.
     ``empirical_abs`` — absolute isotonic P95: not ratio-scaled; used for sensitivity only.
     ``engineering``   — ENTSOG declared capacity with haircut: physical ceiling.
+    ``blended``       — weighted average of empirical and engineering; weight set at construction.
+    ``blend_weight``  — engineering weight used for ``blended`` (0 = pure empirical, 1 = pure engineering).
     ``wc_current``    — latest declared withdrawal capacity (GWh/d); used for ratio-scaling.
     """
     empirical: Callable[[float], float]
     empirical_abs: Callable[[float], float]
     engineering: Callable[[float], float]
+    blended: Callable[[float], float]
+    blend_weight: float
     wc_current: float
 
     def blend(self, eng_weight: float) -> Callable[[float], float]:
@@ -51,6 +55,7 @@ def fit_withdrawal_curves(
     bin_quantile: float = WC_BIN_QUANTILE,
     min_obs: int = WC_MIN_OBS,
     month_order: list[int] = MONTH_ORDER,
+    blend_weight: float = 0.50,
 ) -> WcCurves:
     """Fit all withdrawal-capacity curves from GIE storage data.
 
@@ -137,9 +142,14 @@ def fit_withdrawal_curves(
     def wc_engineering(fp: float) -> float:
         return float(_interp_eng(np.clip(fp, 0, 100)))
 
+    def wc_blended(fp: float) -> float:
+        return (1.0 - blend_weight) * wc_empirical(fp) + blend_weight * wc_engineering(fp)
+
     return WcCurves(
         empirical=wc_empirical,
         empirical_abs=wc_empirical_abs,
         engineering=wc_engineering,
+        blended=wc_blended,
+        blend_weight=blend_weight,
         wc_current=wc_current,
     )
