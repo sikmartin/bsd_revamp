@@ -438,7 +438,7 @@ with st.expander("📖 Metodika a předpoklady"):
 **Datová základna**
 - Zdroj: ENTSOG Transparency Platform — Agregovaná data pro českou vyrovnávací zónu (NET4GAS)
 - Indikátor: Fyzické toky (*Physical Flow*) — co skutečně překročilo hranici
-- Časové omezení: od 1. 3. 2022 — vylučuje ruský tranzit a plnění 2021
+- Časové omezení: od 1.4. 2022 — vylučuje ruský tranzit a plnění 2021
 - Zásobníková data: GIE AGSI+ pro českou agregaci
 
 **Kapacita zásobníků**
