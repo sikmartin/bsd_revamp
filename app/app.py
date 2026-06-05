@@ -31,11 +31,10 @@ jvs.apply_style(theme="light", context="notebook")
 def load_data():
     prof   = bsd.load_demand_profile()
     curves = bsd.fit_withdrawal_curves()
-    imp    = bsd.compute_monthly_imports(bsd.DEFAULT_SCENARIOS_DICT)
     p99c, p99u = bsd.compute_import_benchmarks()
-    return prof, curves, imp, p99c, p99u
+    return prof, curves, p99c, p99u
 
-prof, curves, base_imp, p99_cold, p99_uncond = load_data()
+prof, curves, p99_cold, p99_uncond = load_data()
 
 # ---------------------------------------------------------------------------
 # Postranní panel — společné ovládání
@@ -50,21 +49,46 @@ sc_options = {
     "S3 — Mírný stres (P30)":   "S3",
     "S4 — Medián (P50)":        "S4",
     "S5 — Příznivý (P70)":      "S5",
-    "Vlastní percentil …":      "custom",
 }
-sc_label = st.sidebar.selectbox(
+SCENARIO_PCT = {"S1": 10, "S2": 20, "S3": 30, "S4": 50, "S5": 70}
+key_to_label = {v: k for k, v in sc_options.items()}
+
+def _closest_scenario(pct: int) -> str:
+    """Scénář, jehož percentil je nejblíže zadané hodnotě."""
+    return min(SCENARIO_PCT, key=lambda k: abs(SCENARIO_PCT[k] - pct))
+
+# Sdílený stav — slider a selektor se vzájemně synchronizují
+if "import_pct" not in st.session_state:
+    st.session_state.import_pct = 20  # S2 výchozí
+if "sc_label" not in st.session_state:
+    st.session_state.sc_label = key_to_label["S2"]
+
+def _on_scenario_change():
+    """Výběr scénáře → posuň slider na jeho percentil."""
+    st.session_state.import_pct = SCENARIO_PCT[sc_options[st.session_state.sc_label]]
+
+def _on_slider_change():
+    """Posun slideru → vyber nejbližší scénář."""
+    st.session_state.sc_label = key_to_label[_closest_scenario(st.session_state.import_pct)]
+
+st.sidebar.selectbox(
     "Scénář",
     list(sc_options.keys()),
-    index=1,  # S2 default
+    key="sc_label",
+    on_change=_on_scenario_change,
 )
-sc_key = sc_options[sc_label]
+st.sidebar.slider(
+    "Importní percentil (%)",
+    min_value=5, max_value=90, step=1,
+    key="import_pct",
+    on_change=_on_slider_change,
+    help="Plynulé ladění importního percentilu; nejbližší scénář se vybere automaticky.",
+)
 
-if sc_key == "custom":
-    custom_pct = st.sidebar.slider(
-        "Vlastní percentil importu (%)", min_value=5, max_value=70, value=20, step=1
-    )
-else:
-    custom_pct = None
+sc_label = st.session_state.sc_label
+sc_key   = sc_options[sc_label]
+custom_pct = st.session_state.import_pct
+is_exact_scenario = custom_pct == SCENARIO_PCT[sc_key]
 
 # Sekce: Těžební křivka
 st.sidebar.subheader("Předpoklad těžební křivky")
@@ -112,21 +136,18 @@ st.sidebar.caption(
 # Výpočet (probíhá při každé změně ovládání)
 # ---------------------------------------------------------------------------
 
-def get_import_series():
-    """Vrátí importní Series pro vybraný scénář (nebo vlastní percentil)."""
-    if sc_key == "custom":
-        daily = bsd.data.load_daily_imports(bsd.data.DATA_PATH_IMPORTS, cutoff=bsd.data.DEFAULT_CUTOFF)
-        winter = daily[daily["month"].isin(bsd.MONTH_ORDER)]
-        return pd.Series(
-            {m: winter[winter["month"] == m]["GWh_d"].quantile(custom_pct / 100)
-             for m in bsd.MONTH_ORDER}
-        )
-    return base_imp[sc_key]
+@st.cache_data(ttl=300)
+def imports_for_pct(pct: int) -> pd.Series:
+    """Importní Series (GWh/d) pro libovolný percentil — identická matematika
+    jako scénáře, takže při shodě percentilu vrací stejné hodnoty."""
+    daily = bsd.data.load_daily_imports(bsd.data.DATA_PATH_IMPORTS, cutoff=bsd.data.DEFAULT_CUTOFF)
+    winter = daily[daily["month"].isin(bsd.MONTH_ORDER)]
+    return pd.Series(
+        {m: winter[winter["month"] == m]["GWh_d"].quantile(pct / 100)
+         for m in bsd.MONTH_ORDER}
+    )
 
-imp_series = get_import_series()
-# Wrap as a dict keyed by "active" for the bsd API
-active_key = sc_key if sc_key != "custom" else "custom"
-monthly_imp_single = {active_key: imp_series}
+imp_series = imports_for_pct(custom_pct)
 
 wc_b1 = curves.blend(eng_weight_b1)
 wc_b2 = curves.blend(eng_weight_b2)
@@ -194,7 +215,7 @@ st.markdown(
     "spolehlivosti importů a těžební kapacity (ENTSOG fyzické toky, post-2022)."
 )
 
-sc_display = sc_label if sc_key != "custom" else f"Vlastní P{custom_pct}"
+sc_display = sc_label if is_exact_scenario else f"P{custom_pct} (≈ {sc_key})"
 wc_display = (
     f"Blend B1 {eng_weight_b1:.0%}/B2 {eng_weight_b2:.0%}"
     if wc_choice == "Blend (doporučeno)"
