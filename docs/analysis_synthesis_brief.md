@@ -10,6 +10,22 @@ the open questions that a final storage target model must resolve.
 
 ---
 
+## Scenario definitions
+
+Five import-reliability scenarios span the range from severe stress to favourable conditions.  Each scenario is defined by a **percentile of the post-2022 winter import distribution**: the scenario's import level is what was observed or exceeded on that fraction of winter days.
+
+| Scenario | Import basis | Frequency interpretation | Recommended use |
+|---|---|---|---|
+| **S1 — High stress** | P10 | 9 in 10 winter days had higher imports | Physical-infrastructure stress: pan-European cold event, German capacity constrained |
+| **S2 — Stressed** | P20 | 4 in 5 winter days had higher imports | **Regulatory anchor**: ~1-in-40 joint event under observed demand/import correlation |
+| **S3 — Base stressed** | P30 | 2 in 3 winter days had higher imports | Moderate stress; tighter-than-normal German supply, no corridor failure |
+| **S4 — Median** | P50 | Half of winter days had higher imports | Central case |
+| **S5 — Favourable** | P70 | 3 in 10 winter days had higher imports | Lower bound on storage requirements |
+
+S2 is the **recommended regulatory anchor** throughout this document.  Pairing a 1-in-20 demand event (peak demand) with P20 imports gives a joint severity of approximately 1-in-40 under the observed negative demand/import correlation (§9.1), or 1-in-100 under independence.  S1 captures the physical-infrastructure tail risk where commercial override of import constraints is not possible.
+
+---
+
 ## 1. Data and scope decisions (common to all notebooks)
 
 | Decision | Choice | Rationale |
@@ -17,7 +33,7 @@ the open questions that a final storage target model must resolve.
 | Data source | ENTSOG Physical Flows — all NET4GAS entry points | Physical flows record actual cross-border volumes; commercial allocations can differ |
 | Structural break | Post-2022-03-01 only | Pre-2022 data includes Russian transit and 2021 storage-filling arbitrage — volumes structurally impossible under current market |
 | Season definition | October–March | Aligns with Czech regulatory winter; Oct and Mar are shoulder months with higher uncertainty |
-| Sample size | 1,550 post-cutoff days (760 winter days), covering four full winters (2022/23–2025/26) | Short but structurally homogeneous |
+| Sample size | 1,519 post-cutoff days (729 winter days), covering four full winters (2022/23–2025/26) | Short but structurally homogeneous |
 
 ---
 
@@ -30,8 +46,8 @@ can be **reliably counted on** at a given risk level.
 
 ### Corridor structure
 Post-2022 Czech imports are overwhelmingly sourced from **Germany (DE THE BZ)**:
-- Germany median: **~217 GWh/d** in winter
-- Slovakia median: **0 GWh/d** (intermittent; active on ~306 of 760 winter days, max 176 GWh/d)
+- Germany median: **~212 GWh/d** in winter
+- Slovakia median: **0 GWh/d** (intermittent; active on ~306 of 729 winter days, max 176 GWh/d)
 - **Single-corridor concentration is a key qualitative risk factor.**
 
 ### Season-on-season stability
@@ -52,15 +68,15 @@ current estimates.
 | Percentile | Single-day (GWh/d) | 30-day rolling avg (GWh/d) |
 |---|---|---|
 | P10 | 139 | 156 |
-| P20 | 160 | 189 |
-| P30 | 197 | 202 |
-| P50 | 251 | 240 |
-| P70 | 312 | 282 |
-| P80 | 350 | 313 |
-| P90 | 381 | 347 |
+| P20 | 157 | 189 |
+| P30 | 193 | 202 |
+| P50 | 244 | 240 |
+| P70 | 306 | 281 |
+| P80 | 344 | 312 |
+| P90 | 361 | 346 |
 
-**Key observation**: the 1-in-20 peak demand of 370 GWh/d sits near the P90
-of observed single-day imports, meaning on ~90% of recent winter days imports
+**Key observation**: the 1-in-20 peak demand of 370 GWh/d sits just above the P90
+of observed single-day imports, meaning on more than 90% of recent winter days imports
 were below the peak demand level.  Storage must bridge the gap on almost every
 stressed day.
 
@@ -69,10 +85,10 @@ stressed day.
 | Scenario | Import basis | 30d avg import (GWh/d) | Daily gap (GWh/d) | Storage required (TWh) |
 |---|---|---|---|---|
 | S1 — High stress | P10 | 156 | 214 | **6.41** |
-| S2 — Stressed | P20 | 189 | 181 | **5.43** |
-| S3 — Base stressed | P30 | 202 | 168 | **5.03** |
+| S2 — Stressed | P20 | 189 | 181 | **5.44** |
+| S3 — Base stressed | P30 | 202 | 168 | **5.04** |
 | S4 — Median | P50 | 240 | 130 | **3.90** |
-| S5 — Favourable | P70 | 282 | 88 | **2.65** |
+| S5 — Favourable | P70 | 281 | 89 | **2.66** |
 
 Interpretation of S2: pairing a 1-in-20 demand event with a 1-in-5 import
 shortfall gives a joint severity of roughly 1-in-100 — a common planning
@@ -290,9 +306,9 @@ distributions are modelled explicitly.
 | 1-in-20 peak demand (flat) | 370 GWh/d | `analysis.ipynb` assumption |
 | Peak demand (monthly max, Jan) | 368 GWh/d | `storage_monthly.ipynb` |
 | Post-2022 winter P20 import (pooled) | 189 GWh/d (30d avg) | `analysis.ipynb` |
-| Post-2022 winter P70 import (pooled) | 282 GWh/d (30d avg) | `analysis.ipynb` |
-| Storage S2 (flat 30-day) | 5.43 TWh | `analysis.ipynb` |
-| Storage S5 (flat 30-day) | 2.65 TWh | `analysis.ipynb` |
+| Post-2022 winter P70 import (pooled) | 281 GWh/d (30d avg) | `analysis.ipynb` |
+| Storage S2 (flat 30-day) | 5.44 TWh | `analysis.ipynb` |
+| Storage S5 (flat 30-day) | 2.66 TWh | `analysis.ipynb` |
 | Storage S2 (monthly cumulative) | 21.94 TWh | `storage_monthly.ipynb` |
 | Storage S5 (monthly cumulative) | 5.29 TWh | `storage_monthly.ipynb` |
 | Czech UGS total capacity | 45.30 TWh | AGSI+ |
@@ -370,7 +386,7 @@ The season-long simulation (Branch 2, Section 8) answers the question of how muc
 
 **Compliance checkpoints at month-starts only.**  Intra-month draw-down paths are unconstrained, preserving market flexibility and respecting the commercial incentive to withdraw during high-price cold events.
 
-**No end-of-March endpoint constraint.**  Embedding a March 31 constraint would implicitly provision for a second 1-in-20 event, inconsistent with the once-per-season premise.  A separate ~**0.5 TWh operational floor** at end-March is recommended as a standalone policy instrument.
+**End-of-March operational floor embedded.**  A 0.5 TWh floor at end-March is enforced as a hard constraint in the March simulation (applied after the 30-day stress run completes, not as part of it).  It represents the operational reserve needed before injection season begins and does not provision for a second 1-in-20 event.  For all five scenarios the March obligation is now binding on this floor rather than on the stress-test draw-down itself.  The floor is not applied in any other month.
 
 ### Headline monthly obligations (minimum fill at month start, TWh)
 
@@ -380,18 +396,21 @@ The season-long simulation (Branch 2, Section 8) answers the question of how muc
 > curve; current figures use the 50/50 blend — see
 > [`docs/wc_blend_decision.md`](wc_blend_decision.md) and
 > [`docs/storage_obligations_results.md`](storage_obligations_results.md).
+> **Revised 2026-06-05:** 0.5 TWh end-of-March floor now embedded as a hard constraint
+> in Branch 1 `simulate_month` (was previously shown as a separate instrument).
+> March obligations rise by exactly +0.50 TWh across all scenarios; Oct–Feb unchanged.
+> Binding constraint for March is now "end-of-season floor" for all scenarios.
 
 | Month | S1 — High stress | **S2 — Stressed** | S3 — Base | S4 — Median | S5 — Favourable |
 |---|---|---|---|---|---|
 | Oct | 0.00 | **0.00** | 0.00 | 0.00 | 0.00 |
 | Nov | 1.36 | **1.01** | 0.10 | 0.00 | 0.00 |
-| Dec | 4.50 | **4.12** | 3.41 | 0.46 | 0.00 |
-| Jan | 10.56 | **8.54** | 5.85 | 2.31 | 0.67 |
-| Feb | 6.12 | **3.62** | 2.19 | 1.30 | 0.58 |
-| Mar | 1.19 | **0.34** | 0.21 | 0.00 | 0.00 |
-| + Mar 31 floor | — | **~0.50** | ~0.50 | ~0.50 | ~0.50 |
+| Dec | 4.82 ★ | **4.44 ★** | 3.73 ★ | 0.46 | 0.00 |
+| Jan | 10.91 ★ | **8.89 ★** | 6.20 ★ | 2.31 | 0.67 |
+| Feb | 6.47 ★ | **3.93 ★** | 2.19 | 1.30 | 0.58 |
+| Mar | 1.92 | **0.90** | 0.78 | 0.52 | 0.50 |
 
-★ Withdrawal-rate binding in Dec–Jan for S1–S2 (see `storage_obligations_results.md`).
+★ Withdrawal-rate binding (see `storage_obligations_results.md`). March is end-of-season-floor binding for all scenarios.
 
 **S2 is the recommended regulatory anchor** — pairing a 1-in-20 demand event with a 1-in-5 import shortfall gives a joint severity of approximately 1-in-40 under realistic demand/import correlation (see Section 9.1), or 1-in-100 under the independence assumption.  S1 is the physical-infrastructure stress case (see Section 9.1).
 

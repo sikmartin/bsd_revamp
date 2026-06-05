@@ -30,7 +30,8 @@ starting at fill level F:
    Controlled by the `eng_weight` argument to `bsd.fit_withdrawal_curves().blend(eng_weight)`;
    Branch 1 default is `eng_weight=0.50`.
 4. **Volume constraint** — fill must remain non-negative.
-5. **Minimum obligation** — bisection finds the lowest F at which the simulation is feasible.
+5. **End-of-March floor** — for March only, after the 30-day simulation completes, fill must be ≥ 0.5 TWh.  If not, the simulation is infeasible at that starting fill.
+6. **Minimum obligation** — bisection finds the lowest F at which the simulation is feasible.
 
 Compliance is checked at **month-start checkpoints only** (Oct 1, Nov 1, …, Mar 1).
 Intra-month draw-down paths are unconstrained, preserving market flexibility.
@@ -47,15 +48,17 @@ Intra-month draw-down paths are unconstrained, preserving market flexibility.
 |---|---|---|---|---|---|
 | Oct | 0.00 | **0.00** | 0.00 | 0.00 | 0.00 |
 | Nov | 1.36 | **1.01** | 0.10 | 0.00 | 0.00 |
-| Dec | 4.50 | **4.12** | 3.41 | 0.46 | 0.00 |
-| Jan | 10.56 | **8.54** | 5.85 | 2.31 | 0.67 |
-| Feb | 6.12 | **3.62** | 2.19 | 1.30 | 0.58 |
-| Mar | 1.19 | **0.34** | 0.21 | 0.00 | 0.00 |
+| Dec | 4.82 ★ | **4.44 ★** | 3.73 ★ | 0.46 | 0.00 |
+| Jan | 10.91 ★ | **8.89 ★** | 6.20 ★ | 2.31 | 0.67 |
+| Feb | 6.47 ★ | **3.93 ★** | 2.19 | 1.30 | 0.58 |
+| Mar | 1.92 | **0.90** | 0.78 | 0.52 | 0.50 |
+
+★ Withdrawal-rate binding. March is end-of-season-floor binding for all scenarios.
 
 Czech UGS working-gas capacity: **40.8 TWh** (pre-inverse-storage AGSI+ figure; see T4 note).
 All obligations fit within installed capacity.
 
-**Recommended end-of-season operational floor (separate instrument): ~0.5 TWh at Mar 31.**
+**End-of-season operational floor (0.5 TWh at Mar 31) is embedded as a hard constraint in the March simulation.**
 See Caveats §5.
 
 ### Import capacity ceiling benchmark (P99, cold days)
@@ -72,7 +75,7 @@ it answers "what if the interconnectors deliver near-maximum during the stress p
 | Dec | 387.5 | 0.00 |
 | Jan | 217.3 | **2.20** |
 | Feb | 258.3 | 0.48 |
-| Mar | 742.7 | 0.00 |
+| Mar | 362.3 | 0.50 |
 
 Under this ceiling assumption only January retains a material obligation (2.20 TWh),
 driven purely by the withdrawal-rate constraint — storage cannot deliver the peak-day
@@ -83,12 +86,12 @@ gap fast enough even with generous imports.
 | WC assumption | Import assumption | Jan obligation |
 |---|---|---|
 | Empirical P95 | S2 scenarios | 13.85 TWh |
-| **Blend 50/50** | **S2 scenarios** | **8.54 TWh (default)** |
+| **Blend 50/50** | **S2 scenarios** | **8.89 TWh (default)** |
 | ENTSOG engineering | S2 scenarios | 4.68 TWh |
 | Blend 50/50 | P99 cold days | 2.20 TWh |
 
 The range 2–14 TWh represents the full span of defensible regulatory choices.
-**S2 / blend (8.54 TWh) is the recommended anchor**: it pairs a conservative but
+**S2 / blend (8.89 TWh) is the recommended anchor**: it pairs a conservative but
 not extreme import assumption with a withdrawal curve that acknowledges both physical
 capacity and observed commercial behaviour.
 
@@ -134,7 +137,7 @@ rather than five equally weighted options.
 | Dec | 137 | 142 | 150 | 260 | 341 | 391 | **388** |
 | Jan | 113 | 135 | 164 | 214 | 272 | 366 | **217** |
 | Feb | 120 | 149 | 185 | 215 | 244 | 314 | **258** |
-| Mar | 154 | 196 | 216 | 254 | 350 | 820 | **743** |
+| Mar | 146 | 187 | 205 | 243 | 264 | 485 | **362** |
 
 December and January show the widest spread — German hub supply is most variable
 during deep-winter cold snaps.
@@ -189,11 +192,12 @@ being tested under demand stress.  Choose which benchmark to display by passing 
 `p99_cold` or `p99_uncond` from `bsd.compute_p99_imports()` as the import Series.  The residual risk of a pan-European physical
 capacity constraint (German pipe saturated) is captured by S1.
 
-**5. End-of-season operational floor.**  No endpoint constraint is embedded in the March
-stress test (doing so would provision for a second 1-in-20 event).  A separate minimum
-reserve of **~0.5 TWh at March 31** is recommended — covering roughly 5 days of the
-S2 March peak gap (49 GWh/d net of imports) before injection season begins.  This is
-a standalone regulatory instrument, additional to the monthly obligations above.
+**5. End-of-season operational floor.**  A 0.5 TWh floor at March 31 is enforced as a
+hard constraint in the March simulation (applied after the 30-day stress run completes,
+not as part of it — so it does not provision for a second 1-in-20 event).  For all five
+scenarios the March obligation is binding on this floor.  The floor represents the
+operational reserve needed before injection season begins (~5 days of the S2 March
+peak gap at 49 GWh/d net of imports).  The floor is not applied in any other month.
 
 **6. Czech monthly framing vs. EU floating window.**  The EU regulation's 7/30-day stress
 events are not calendar-pinned.  The Czech monthly approach is administratively tractable
